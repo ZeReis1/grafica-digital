@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0284c7">
+  <title>PrintPro • Gráfica Digital & Catálogo Interativo</title>
+  <meta name="description" content="Consulte preços de cartões de visita, panfletos, adesivos e banners em tempo real e faça seu pedido direto pelo WhatsApp.">
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              900: '#0c4a6e'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Estilos Customizados & Mobile-First -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="mobile-safe-bottom">
+
+  <!-- ================= TOP HEADER FIXO ================= -->
+  <header class="header-glass">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <!-- Logo da Gráfica -->
+      <a href="index.html" class="flex items-center gap-2.5 text-decoration-none">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-cyan-400 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+          <i data-lucide="printer" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span id="headerStoreName" class="font-extrabold text-slate-900 tracking-tight text-base sm:text-lg block leading-tight">PrintPro</span>
+          <span class="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Balcão Online Aberto
+          </span>
+        </div>
+      </a>
+
+      <!-- Ações do Header (Rastreio e Carrinho) -->
+      <div class="flex items-center gap-2">
+        <!-- Botão Rastrear -->
+        <button onclick="app.openTrackerModal()" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition">
+          <i data-lucide="search" class="w-3.5 h-3.5"></i> Rastrear Pedido
+        </button>
+
+        <!-- Botão Carrinho com Badge -->
+        <button onclick="app.openCartModal()" class="relative p-2.5 rounded-xl bg-slate-100 text-slate-800 hover:bg-slate-200 transition flex items-center justify-center">
+          <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          <span id="cartBadge" class="absolute -top-1 -right-1 bg-sky-600 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm scale-0 transition-transform">0</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de Pesquisa Rápida -->
+    <div class="max-w-5xl mx-auto px-4 pb-3">
+      <div class="relative">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Buscar produto (ex: cartão, panfleto, adesivo, banner...)" 
+          class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-100/90 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition"
+          oninput="app.handleSearch(this.value)"
+        >
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= HERO BANNER MOBILE ================= -->
+  <section class="max-w-5xl mx-auto px-4 pt-3 pb-2">
+    <div class="relative rounded-2xl overflow-hidden bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 text-white p-5 sm:p-7 shadow-lg">
+      <div class="relative z-10 max-w-md">
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-500/20 border border-sky-400/30 text-sky-300 text-xs font-bold mb-2.5">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Catálogo Digital Interativo
+        </div>
+        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight leading-snug">
+          Simule seu orçamento em segundos & faça seu pedido direto no WhatsApp!
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-300 mt-2">
+          Impressão de alta definição, papéis especiais e prazos rápidos para impulsionar seu negócio.
+        </p>
+
+        <!-- Vantagens Rápidas -->
+        <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/10 text-center">
+          <div>
+            <span class="block text-sky-400 font-extrabold text-xs sm:text-sm">⚡ 24h a 48h</span>
+            <span class="text-[10px] text-slate-400 font-medium">Produção Ágil</span>
+          </div>
+          <div>
+            <span class="block text-emerald-400 font-extrabold text-xs sm:text-sm">🎨 Criamos Arte</span>
+            <span class="text-[10px] text-slate-400 font-medium">Design Profissional</span>
+          </div>
+          <div>
+            <span class="block text-cyan-400 font-extrabold text-xs sm:text-sm">💳 Pix & Cartão</span>
+            <span class="text-[10px] text-slate-400 font-medium">Facilidade</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CARROSSEL DE CATEGORIAS ================= -->
+  <section class="max-w-5xl mx-auto my-2">
+    <div class="category-scroll" id="categoryContainer">
+      <button class="cat-chip active" onclick="app.filterCategory('all', this)">
+        ✨ Todos os Produtos
+      </button>
+      <button class="cat-chip" onclick="app.filterCategory('cartoes', this)">
+        📇 Cartões de Visita
+      </button>
+      <button class="cat-chip" onclick="app.filterCategory('panfletos', this)">
+        📄 Panfletos & Flyers
+      </button>
+      <button class="cat-chip" onclick="app.filterCategory('adesivos', this)">
+        🏷️ Adesivos & Rótulos
+      </button>
+      <button class="cat-chip" onclick="app.filterCategory('banners', this)">
+        🚩 Banners & Lonas
+      </button>
+      <button class="cat-chip" onclick="app.filterCategory('corporativo', this)">
+        📁 Pastas & Blocos
+      </button>
+      <button class="cat-chip" onclick="app.filterCategory('restaurantes', this)">
+        ☕ Cardápios
+      </button>
+      <button class="cat-chip" onclick="app.filterCategory('brindes', this)">
+        🎁 Brindes & Canecas
+      </button>
+    </div>
+  </section>
+
+  <!-- ================= GRID DE PRODUTOS ================= -->
+  <main class="max-w-5xl mx-auto px-4 py-2">
+    <div class="flex items-center justify-between mb-3">
+      <h2 id="sectionTitle" class="text-base sm:text-lg font-bold text-slate-800">Produtos em Destaque</h2>
+      <span id="productCount" class="text-xs text-slate-500 font-medium">8 itens disponíveis</span>
+    </div>
+
+    <!-- Container dos Cards -->
+    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Injetado dinamicamente via app.js -->
+    </div>
+
+    <!-- Empty State se busca não encontrar nada -->
+    <div id="emptySearch" class="hidden text-center py-12 px-4 bg-white rounded-2xl border border-slate-200 mt-4">
+      <i data-lucide="package-search" class="w-12 h-12 text-slate-300 mx-auto mb-2"></i>
+      <h3 class="font-bold text-slate-700">Nenhum produto encontrado</h3>
+      <p class="text-xs text-slate-500 mt-1">Tente buscar por outro termo ou nos chame no WhatsApp para um orçamento sob medida.</p>
+      <button onclick="app.clearSearch()" class="mt-4 px-4 py-2 text-xs font-bold text-sky-600 bg-sky-50 rounded-xl hover:bg-sky-100">
+        Ver todos os produtos
+      </button>
+    </div>
+  </main>
+
+  <!-- ================= BANNER ORÇAMENTO PERSONALIZADO ================= -->
+  <section class="max-w-5xl mx-auto px-4 my-6">
+    <div class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+      <div>
+        <h3 class="text-base sm:text-lg font-extrabold">Não encontrou o que procurava?</h3>
+        <p class="text-xs sm:text-sm text-emerald-50 mt-1">
+          Trabalhamos com formatos especiais, fachadas em ACM, letras caixa, crachás, carimbos e muito mais.
+        </p>
+      </div>
+      <button onclick="app.openCustomQuoteWhatsApp()" class="w-full sm:w-auto px-5 py-3 rounded-xl bg-white text-emerald-800 font-extrabold text-sm hover:bg-emerald-50 transition shadow whitespace-nowrap flex items-center justify-center gap-2">
+        <i data-lucide="message-circle" class="w-4 h-4 text-emerald-600"></i> Orçamento Sob Medida
+      </button>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-white border-t border-slate-200 mt-10 pt-8 pb-16 px-4 text-slate-600 text-xs">
+    <div class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div>
+        <h4 id="footerStoreName" class="font-bold text-slate-900 text-sm mb-2">PrintPro Gráfica</h4>
+        <p id="footerTagline" class="text-slate-500 mb-3">Impressos com acabamento impecável para fazer sua marca se destacar.</p>
+        <p class="flex items-center gap-1.5 text-slate-700 font-semibold mb-1">
+          <i data-lucide="map-pin" class="w-4 h-4 text-sky-600"></i>
+          <span id="footerAddress">Rua do Comércio, 340 - Centro</span>
+        </p>
+        <p class="flex items-center gap-1.5 text-slate-700 font-semibold">
+          <i data-lucide="clock" class="w-4 h-4 text-sky-600"></i>
+          <span id="footerHours">Seg a Sex: 08:30 às 18:30</span>
+        </p>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-slate-900 text-sm mb-2">Formas de Pagamento</h4>
+        <p class="text-slate-500 mb-2">Aceitamos Pix com aprovação imediata, Cartões de Crédito/Débito e Dinheiro.</p>
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-1 bg-slate-100 rounded text-[11px] font-bold text-slate-700">🔑 Pix</span>
+          <span class="px-2 py-1 bg-slate-100 rounded text-[11px] font-bold text-slate-700">💳 Cartões</span>
+          <span class="px-2 py-1 bg-slate-100 rounded text-[11px] font-bold text-slate-700">💵 Balcão</span>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-slate-900 text-sm mb-2">Área do Lojista</h4>
+        <p class="text-slate-500 mb-3">Acesso ao painel administrativo para registro de vendas, custos e gestão de pedidos.</p>
+        <a href="admin.html" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition">
+          <i data-lucide="lock" class="w-3.5 h-3.5"></i> Acessar Painel Admin (Notebook/PC)
+        </a>
+      </div>
+    </div>
+
+    <div class="max-w-5xl mx-auto border-t border-slate-100 mt-6 pt-4 text-center text-slate-400 text-[11px]">
+      © <span id="currentYear">2026</span> PrintPro Gráfica Digital • Todos os direitos reservados.
+    </div>
+  </footer>
+
+  <!-- ================= BOTTOM NAVIGATION BAR (CELULAR) ================= -->
+  <nav class="bottom-nav">
+    <a href="#" onclick="app.scrollToTop(); return false;" class="nav-item active" id="navHome">
+      <i data-lucide="home" class="w-5 h-5"></i>
+      <span>Início</span>
+    </a>
+    <a href="#categoryContainer" onclick="app.focusSearch(); return false;" class="nav-item" id="navCatalog">
+      <i data-lucide="grid" class="w-5 h-5"></i>
+      <span>Catálogo</span>
+    </a>
+    <button onclick="app.openTrackerModal()" class="nav-item" id="navTrack">
+      <i data-lucide="search-check" class="w-5 h-5"></i>
+      <span>Rastrear</span>
+    </button>
+    <button onclick="app.openCartModal()" class="nav-item relative" id="navCart">
+      <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+      <span id="navCartBadge" class="absolute top-1 right-2.5 bg-sky-600 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center scale-0 transition-transform">0</span>
+      <span>Carrinho</span>
+    </button>
+    <a id="btnBottomWhatsapp" href="#" target="_blank" class="nav-item text-emerald-600">
+      <i data-lucide="message-circle" class="w-5 h-5 text-emerald-600"></i>
+      <span>WhatsApp</span>
+    </a>
+  </nav>
+
+  <!-- ================= BOTÃO FLUTUANTE DE WHATSAPP ================= -->
+  <a id="floatingWhatsapp" href="#" target="_blank" class="floating-whatsapp pulse-anim" title="Falar com Atendente">
+    <i data-lucide="message-circle" class="w-7 h-7"></i>
+  </a>
+
+  <!-- ================= MODAL: SIMULADOR DE PREÇO & PERSONALIZAÇÃO ================= -->
+  <div id="calculatorModal" class="modal-overlay" onclick="app.closeCalculatorOnBackdrop(event)">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+
+      <!-- Header do Modal -->
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div id="calcProductIcon" class="w-9 h-9 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
+            <i data-lucide="printer" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 id="calcProductName" class="font-bold text-slate-900 text-base leading-tight">Configurar Produto</h3>
+            <span id="calcProductTurnaround" class="text-xs text-slate-500 font-medium">⚡ 2 a 3 dias úteis</span>
+          </div>
+        </div>
+        <button onclick="app.closeCalculatorModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Conteúdo Scrollável com Opções de Personalização -->
+      <div class="p-4 overflow-y-auto space-y-4 max-h-[60vh]">
+        <!-- 1. Seleção de Quantidade / Tiragem -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            1. Escolha a Tiragem / Quantidade
+          </label>
+          <div id="calcQuantities" class="option-grid">
+            <!-- Gerado dinamicamente -->
+          </div>
+        </div>
+
+        <!-- 2. Seleção de Papel / Material -->
+        <div id="calcPaperSection">
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            2. Tipo de Papel / Material
+          </label>
+          <div id="calcPapers" class="space-y-1.5">
+            <!-- Gerado dinamicamente -->
+          </div>
+        </div>
+
+        <!-- 3. Seleção de Acabamento -->
+        <div id="calcFinishSection">
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            3. Acabamento & Impressão
+          </label>
+          <div id="calcFinishes" class="space-y-1.5">
+            <!-- Gerado dinamicamente -->
+          </div>
+        </div>
+
+        <!-- 4. Criação da Arte -->
+        <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+          <label class="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
+            4. Criação da Arte Gráfica
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <label class="flex items-start gap-2.5 p-3 rounded-xl border bg-white cursor-pointer hover:border-sky-400 transition" id="artReadyLabel">
+              <input type="radio" name="artChoice" value="ready" checked onchange="app.handleArtChange('ready')" class="mt-0.5 text-sky-600 focus:ring-sky-500">
+              <div>
+                <span class="block text-xs font-bold text-slate-800">Já tenho a arte pronta</span>
+                <span class="block text-[11px] text-slate-500">Envie em PDF, JPG ou Corel</span>
+                <span class="inline-block mt-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">Sem Custo</span>
+              </div>
+            </label>
+
+            <label class="flex items-start gap-2.5 p-3 rounded-xl border bg-white cursor-pointer hover:border-sky-400 transition" id="artNeedLabel">
+              <input type="radio" name="artChoice" value="need" onchange="app.handleArtChange('need')" class="mt-0.5 text-sky-600 focus:ring-sky-500">
+              <div>
+                <span class="block text-xs font-bold text-slate-800">Quero criação de arte</span>
+                <span class="block text-[11px] text-slate-500">Nossa equipe cria do zero</span>
+                <span id="artFeeBadge" class="inline-block mt-1 text-[10px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">+ R$ 35,00</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 5. Opcionais Extras (se houver) -->
+        <div id="calcExtrasSection" class="hidden">
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            5. Opcionais Adicionais
+          </label>
+          <div id="calcExtras" class="space-y-1.5">
+            <!-- Injetado dinamicamente -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Rodapé Fixo com Preço Total e Ações -->
+      <div class="p-4 bg-slate-50 border-t border-slate-200">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <span class="text-xs text-slate-500 font-medium block">Valor Total do Pedido:</span>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xs font-bold text-slate-700">R$</span>
+              <span id="calcTotalValue" class="text-2xl font-black text-slate-900">0,00</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span id="calcSummaryUnit" class="text-xs font-bold text-sky-700 block">1.000 un</span>
+            <span class="text-[11px] text-slate-500">Prazo: <strong id="calcSummaryTurnaround">2-3 dias</strong></span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="app.addCurrentToCart()" class="py-3 px-3 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition flex items-center justify-center gap-1.5 min-h-[48px]">
+            <i data-lucide="shopping-bag" class="w-4 h-4"></i> + Adicionar Carrinho
+          </button>
+          <button onclick="app.orderCurrentViaWhatsApp()" class="py-3 px-3 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition flex items-center justify-center gap-1.5 min-h-[48px] shadow-md shadow-emerald-600/20">
+            <i data-lucide="message-circle" class="w-4 h-4"></i> Pedir no WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: CARRINHO & CHECKOUT ================= -->
+  <div id="cartModal" class="modal-overlay" onclick="app.closeCartOnBackdrop(event)">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+
+      <!-- Header Carrinho -->
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="shopping-cart" class="w-5 h-5 text-sky-600"></i>
+          <h3 class="font-bold text-slate-900 text-base">Meu Pedido / Carrinho</h3>
+        </div>
+        <button onclick="app.closeCartModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Lista de Itens do Carrinho -->
+      <div class="p-4 overflow-y-auto space-y-4 max-h-[60vh]">
+        <!-- Itens -->
+        <div id="cartItemsList" class="space-y-3">
+          <!-- Renderizado via app.js -->
+        </div>
+
+        <!-- Se Carrinho Vazio -->
+        <div id="cartEmptyState" class="hidden text-center py-8">
+          <i data-lucide="shopping-bag" class="w-12 h-12 text-slate-300 mx-auto mb-2"></i>
+          <p class="font-bold text-slate-700 text-sm">Seu carrinho está vazio</p>
+          <p class="text-xs text-slate-500 mt-1">Selecione produtos no catálogo para montar seu pedido.</p>
+        </div>
+
+        <!-- Formulário de Checkout (Exibido quando tem itens) -->
+        <div id="checkoutForm" class="space-y-3 pt-3 border-t border-slate-200">
+          <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider">Dados para Envio & Retirada</h4>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Seu Nome Completo *</label>
+            <input type="text" id="clientNameInput" placeholder="Ex: João da Silva" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Seu WhatsApp com DDD *</label>
+            <input type="tel" id="clientPhoneInput" placeholder="Ex: (35) 99999-9999" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500">
+          </div>
+
+          <!-- Tipo de Entrega -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Forma de Retirada / Entrega</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="flex items-center gap-2 p-2.5 rounded-xl border bg-slate-50 cursor-pointer">
+                <input type="radio" name="deliveryType" value="balcao" checked onchange="app.toggleDeliveryAddress(false)" class="text-sky-600">
+                <span class="text-xs font-semibold text-slate-800">Retirar no Balcão (Grátis)</span>
+              </label>
+              <label class="flex items-center gap-2 p-2.5 rounded-xl border bg-slate-50 cursor-pointer">
+                <input type="radio" name="deliveryType" value="entrega" onchange="app.toggleDeliveryAddress(true)" class="text-sky-600">
+                <span class="text-xs font-semibold text-slate-800">Entrega / Motoboy</span>
+              </label>
+            </div>
+          </div>
+
+          <div id="addressField" class="hidden">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Endereço de Entrega Completo</label>
+            <input type="text" id="clientAddressInput" placeholder="Rua, Número, Bairro e Cidade" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500">
+          </div>
+
+          <!-- Link da Arte / Observação -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Link da Arte (Google Drive / Canva / WeTransfer)</label>
+            <input type="url" id="clientArtLinkInput" placeholder="https://drive.google.com/..." class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <span class="text-[10px] text-slate-400 mt-0.5 block">Se preferir, pode enviar os arquivos diretamente no WhatsApp após finalizar.</span>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Observações do Pedido (Opcional)</label>
+            <textarea id="clientNotesInput" rows="2" placeholder="Algum detalhe ou prazo específico?" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+          </div>
+
+          <!-- Chave Pix da Gráfica -->
+          <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                <i data-lucide="qr-code" class="w-4 h-4 text-emerald-600"></i> Pagamento via Pix
+              </span>
+              <button onclick="app.copyPixKey()" class="text-[11px] font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-2 py-0.5 rounded transition">
+                Copiar Chave
+              </button>
+            </div>
+            <p class="text-xs text-emerald-800">Chave: <strong id="cartPixKey">35999702316</strong> (<span id="cartPixOwner">PrintPro</span>)</p>
+            <p class="text-[11px] text-emerald-600 mt-1">Ao enviar o pedido, você receberá a confirmação e o comprovante poderá ser anexado no WhatsApp.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rodapé Carrinho -->
+      <div id="cartFooter" class="p-4 bg-slate-50 border-t border-slate-200">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-bold text-slate-600">Total a Pagar:</span>
+          <div class="flex items-baseline gap-1">
+            <span class="text-xs font-bold text-slate-700">R$</span>
+            <span id="cartTotalValue" class="text-2xl font-black text-slate-900">0,00</span>
+          </div>
+        </div>
+
+        <button onclick="app.submitCartOrder()" class="btn-whatsapp">
+          <i data-lucide="send" class="w-5 h-5"></i> Confirmar Pedido no WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: RASTREADOR DE PEDIDOS ================= -->
+  <div id="trackerModal" class="modal-overlay" onclick="app.closeTrackerOnBackdrop(event)">
+    <div class="modal-sheet max-w-lg">
+      <div class="sheet-handle"></div>
+
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="search-check" class="w-5 h-5 text-sky-600"></i>
+          <h3 class="font-bold text-slate-900 text-base">Rastrear Status do Pedido</h3>
+        </div>
+        <button onclick="app.closeTrackerModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-4 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Número do Pedido ou WhatsApp</label>
+          <div class="flex gap-2">
+            <input type="text" id="trackerInput" placeholder="Ex: PED-1082 ou 3599970..." class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <button onclick="app.trackOrder()" class="px-4 py-2 bg-sky-600 text-white font-bold text-xs rounded-xl hover:bg-sky-700 transition">
+              Consultar
+            </button>
+          </div>
+        </div>
+
+        <!-- Resultado do Rastreamento -->
+        <div id="trackerResult" class="hidden">
+          <!-- Injetado dinamicamente -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

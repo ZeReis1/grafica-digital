@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <title>Painel de Gestão & Finanças • Gráfica Digital</title>
+  <meta name="description" content="Painel de controle de pedidos, fluxo de caixa e gestão financeira da gráfica.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            admin: {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              800: '#1e293b',
+              900: '#0f172a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js para Relatórios Visuais no Notebook -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Estilos Customizados & Responsivos -->
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* Estilos específicos do painel de controle */
+    .admin-card {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    .kanban-col {
+      min-width: 290px;
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
+
+  <!-- ================= TELA DE BLOQUEIO / PIN DE ACESSO ================= -->
+  <div id="pinLockScreen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl">
+      <div class="w-14 h-14 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="shield-check" class="w-7 h-7"></i>
+      </div>
+      <h2 class="text-xl font-black text-slate-900 mb-1">Painel do Lojista</h2>
+      <p class="text-xs text-slate-500 mb-6">Digite seu PIN de 4 dígitos para gerenciar vendas, pedidos e custos.</p>
+
+      <div class="mb-4">
+        <input 
+          type="password" 
+          id="pinInput" 
+          maxlength="6" 
+          placeholder="••••" 
+          class="w-full text-center text-3xl font-black tracking-widest py-3 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-sky-500 bg-slate-50"
+          onkeyup="if(event.key === 'Enter') admin.unlockWithPin()"
+        >
+        <span class="text-[11px] text-slate-400 mt-2 block">PIN padrão inicial: <strong>1234</strong></span>
+      </div>
+
+      <button onclick="admin.unlockWithPin()" class="btn-primary w-full text-sm font-bold py-3.5 mb-3">
+        Desbloquear Painel
+      </button>
+
+      <a href="index.html" class="text-xs font-semibold text-slate-500 hover:text-slate-800 block">
+        ← Voltar ao Catálogo do Cliente
+      </a>
+    </div>
+  </div>
+
+  <!-- ================= ESTRUTURA PRINCIPAL DO ADMIN ================= -->
+  <div id="adminApp" class="hidden flex flex-col md:flex-row min-h-screen">
+
+    <!-- ================= SIDEBAR DESKTOP / NOTEBOOK ================= -->
+    <aside class="w-full md:w-64 bg-slate-900 text-white flex-shrink-0 flex flex-col justify-between border-r border-slate-800">
+      <div>
+        <!-- Logo do Admin -->
+        <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-sky-500 flex items-center justify-center text-white font-bold shadow-md shadow-sky-500/30">
+              <i data-lucide="printer" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h1 id="adminStoreTitle" class="font-black text-sm tracking-tight leading-tight">PrintPro Admin</h1>
+              <span class="text-[10px] text-sky-400 font-semibold uppercase tracking-wider">Gestão & Finanças</span>
+            </div>
+          </div>
+          <!-- Link rápido para loja -->
+          <a href="index.html" target="_blank" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition" title="Ver Catálogo do Cliente">
+            <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+        </div>
+
+        <!-- Menu de Navegação do Notebook -->
+        <nav class="p-3 space-y-1 text-sm font-semibold">
+          <button onclick="admin.switchTab('finances')" id="tabBtnFinances" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-sky-600 text-white transition">
+            <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+            <span>Finanças & Caixa</span>
+          </button>
+
+          <button onclick="admin.switchTab('orders')" id="tabBtnOrders" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            <i data-lucide="package" class="w-5 h-5"></i>
+            <span>Pedidos & Produção</span>
+            <span id="adminPendingOrdersBadge" class="ml-auto text-[10px] font-black bg-amber-500 text-slate-900 px-2 py-0.5 rounded-full">0</span>
+          </button>
+
+          <button onclick="admin.switchTab('products')" id="tabBtnProducts" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            <i data-lucide="layers" class="w-5 h-5"></i>
+            <span>Catálogo & Preços</span>
+          </button>
+
+          <button onclick="admin.switchTab('settings')" id="tabBtnSettings" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            <i data-lucide="settings" class="w-5 h-5"></i>
+            <span>Configurações & Pix</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Rodapé da Sidebar -->
+      <div class="p-4 border-t border-slate-800">
+        <div class="flex items-center justify-between text-xs text-slate-400">
+          <span class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Conectado
+          </span>
+          <button onclick="admin.lockPanel()" class="text-slate-400 hover:text-red-400 font-semibold flex items-center gap-1 transition">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Bloquear
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ================= ÁREA DE CONTEÚDO PRINCIPAL (NOTEBOOK / PC) ================= -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+
+      <!-- Topbar do Admin -->
+      <header class="bg-white border-b border-slate-200 px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 sticky top-0 z-30 shadow-sm">
+        <div class="flex items-center gap-3">
+          <h2 id="currentTabTitle" class="text-lg font-black text-slate-900">Fluxo de Caixa & Finanças</h2>
+        </div>
+
+        <!-- Ações Rápidas do Topbar (Ideal para registrar vendas no balcão) -->
+        <div class="flex items-center gap-2">
+          <!-- Botão Nova Venda Balcão -->
+          <button onclick="admin.openQuickSaleModal()" class="px-3.5 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition flex items-center gap-1.5 shadow-sm shadow-emerald-600/20">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Nova Venda Balcão</span>
+            <span class="sm:hidden">+ Venda</span>
+          </button>
+
+          <!-- Botão Novo Custo / Despesa -->
+          <button onclick="admin.openQuickExpenseModal()" class="px-3.5 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition flex items-center gap-1.5 shadow-sm">
+            <i data-lucide="minus-circle" class="w-4 h-4 text-red-400"></i>
+            <span class="hidden sm:inline">Novo Custo / Despesa</span>
+            <span class="sm:hidden">+ Custo</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- ================= ABA 1: FINANÇAS & FLUXO DE CAIXA ================= -->
+      <section id="tabFinances" class="p-4 sm:p-6 space-y-6">
+
+        <!-- Barra de Filtro de Período -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Período:</span>
+            <div class="flex gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+              <button onclick="admin.setPeriodFilter('all', this)" class="period-btn px-3 py-1.5 rounded-lg active bg-white text-slate-900 shadow-sm">Todos</button>
+              <button onclick="admin.setPeriodFilter('today', this)" class="period-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">Hoje</button>
+              <button onclick="admin.setPeriodFilter('7days', this)" class="period-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">7 Dias</button>
+              <button onclick="admin.setPeriodFilter('month', this)" class="period-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">Este Mês</button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="admin.exportFinancialCSV()" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition flex items-center gap-1.5">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar CSV (Excel)
+            </button>
+          </div>
+        </div>
+
+        <!-- Cards de Métricas Principais (KPIs) -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <!-- Faturamento Total -->
+          <div class="admin-card p-4 sm:p-5">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Faturamento Bruto</span>
+              <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <i data-lucide="trending-up" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xs font-bold text-slate-500">R$</span>
+              <span id="kpiRevenue" class="text-xl sm:text-2xl font-black text-slate-900">0,00</span>
+            </div>
+            <span class="text-[11px] text-emerald-600 font-semibold mt-1 block">Receitas acumuladas</span>
+          </div>
+
+          <!-- Custos & Despesas -->
+          <div class="admin-card p-4 sm:p-5">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Custos & Despesas</span>
+              <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+                <i data-lucide="trending-down" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xs font-bold text-slate-500">R$</span>
+              <span id="kpiExpense" class="text-xl sm:text-2xl font-black text-red-600">0,00</span>
+            </div>
+            <span class="text-[11px] text-slate-400 font-semibold mt-1 block">Papel, tintas, fixos</span>
+          </div>
+
+          <!-- Lucro Líquido -->
+          <div class="admin-card p-4 sm:p-5">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Lucro Líquido</span>
+              <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center">
+                <i data-lucide="badge-dollar-sign" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xs font-bold text-slate-500">R$</span>
+              <span id="kpiProfit" class="text-xl sm:text-2xl font-black text-emerald-700">0,00</span>
+            </div>
+            <span id="kpiMarginBadge" class="text-[11px] text-sky-700 font-bold mt-1 block">Margem: 0%</span>
+          </div>
+
+          <!-- Ticket Médio -->
+          <div class="admin-card p-4 sm:p-5">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Ticket Médio</span>
+              <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xs font-bold text-slate-500">R$</span>
+              <span id="kpiTicket" class="text-xl sm:text-2xl font-black text-slate-900">0,00</span>
+            </div>
+            <span id="kpiOrdersCount" class="text-[11px] text-slate-400 font-semibold mt-1 block">0 vendas fechadas</span>
+          </div>
+        </div>
+
+        <!-- Gráficos Visuais do Fluxo de Caixa -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Gráfico de Comparação: Entradas vs Saídas -->
+          <div class="admin-card p-5 lg:col-span-2">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <i data-lucide="bar-chart-3" class="w-4 h-4 text-sky-600"></i> Faturamento vs Custos de Produção
+              </h3>
+            </div>
+            <div class="h-64 relative">
+              <canvas id="chartCashFlow"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico de Vendas por Categoria -->
+          <div class="admin-card p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <i data-lucide="pie-chart" class="w-4 h-4 text-sky-600"></i> Receitas por Categoria
+              </h3>
+            </div>
+            <div class="h-64 relative flex items-center justify-center">
+              <canvas id="chartCategories"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabela Responsiva de Lançamentos Financeiros (modern-web-guidance compliant) -->
+        <div class="admin-card p-5">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <i data-lucide="receipt" class="w-4 h-4 text-sky-600"></i> Extrato de Movimentações
+            </h3>
+
+            <!-- Filtro de Tipo -->
+            <div class="flex gap-2">
+              <select id="financeTypeFilter" onchange="admin.renderFinanceTable()" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 font-semibold text-slate-700">
+                <option value="all">Todas as Movimentações</option>
+                <option value="receita">Apenas Receitas (Vendas)</option>
+                <option value="despesa">Apenas Custos / Despesas</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tabela com Suporte a Container Queries e Sticky Header -->
+          <div class="table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Tipo</th>
+                  <th>Categoria</th>
+                  <th>Descrição / Pedido</th>
+                  <th>Forma Pagto</th>
+                  <th>Valor</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="financeTableBody">
+                <!-- Injetado dinamicamente via admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA 2: GESTÃO DE PEDIDOS & PRODUÇÃO ================= -->
+      <section id="tabOrders" class="hidden p-4 sm:p-6 space-y-6">
+
+        <!-- Filtros Rápidos de Pedido -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200">
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="admin.filterOrders('all', this)" class="order-filter-btn px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold">Todos (<span id="countAllOrders">0</span>)</button>
+            <button onclick="admin.filterOrders('novo', this)" class="order-filter-btn px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200">Novos</button>
+            <button onclick="admin.filterOrders('arte', this)" class="order-filter-btn px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200">Em Arte</button>
+            <button onclick="admin.filterOrders('producao', this)" class="order-filter-btn px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200">Em Impressão</button>
+            <button onclick="admin.filterOrders('pronto', this)" class="order-filter-btn px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200">Prontos p/ Retirada</button>
+            <button onclick="admin.filterOrders('entregue', this)" class="order-filter-btn px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200">Entregues</button>
+          </div>
+
+          <div class="relative w-full sm:w-64">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input 
+              type="text" 
+              placeholder="Buscar cliente ou pedido..." 
+              id="orderSearchInput"
+              oninput="admin.searchOrders(this.value)"
+              class="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+            >
+          </div>
+        </div>
+
+        <!-- Grade de Pedidos -->
+        <div id="ordersContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <!-- Cards de pedidos gerados via admin.js -->
+        </div>
+
+        <div id="emptyOrdersNotice" class="hidden text-center py-12 bg-white rounded-2xl border border-slate-200">
+          <i data-lucide="package-check" class="w-12 h-12 text-slate-300 mx-auto mb-2"></i>
+          <h4 class="font-bold text-slate-700">Nenhum pedido nesta etapa</h4>
+          <p class="text-xs text-slate-500 mt-1">Todos os pedidos estão em dia!</p>
+        </div>
+      </section>
+
+      <!-- ================= ABA 3: CATÁLOGO DE PRODUTOS & PREÇOS ================= -->
+      <section id="tabProducts" class="hidden p-4 sm:p-6 space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-black text-slate-900 text-base">Tabela de Preços & Produtos Ativos</h3>
+            <p class="text-xs text-slate-500">Configure os valores base, prazos de produção e itens exibidos no catálogo mobile.</p>
+          </div>
+          <button onclick="admin.openNewProductModal()" class="btn-primary text-xs py-2 px-3.5">
+            <i data-lucide="plus" class="w-4 h-4"></i> Adicionar Produto
+          </button>
+        </div>
+
+        <div id="adminProductsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Renderizado dinamicamente -->
+        </div>
+      </section>
+
+      <!-- ================= ABA 4: CONFIGURAÇÕES & PIX ================= -->
+      <section id="tabSettings" class="hidden p-4 sm:p-6 space-y-6 max-w-3xl">
+        <div class="admin-card p-6 space-y-5">
+          <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
+            <i data-lucide="settings" class="w-5 h-5 text-sky-600"></i> Informações Gerais da Gráfica
+          </h3>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Nome Completo da Gráfica</label>
+              <input type="text" id="cfgStoreName" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Nome Abreviado (Topo do Celular)</label>
+              <input type="text" id="cfgShortName" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">WhatsApp Comercial (com DDD e 55)</label>
+              <input type="text" id="cfgWhatsapp" placeholder="5535999702316" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Telefone Visível para o Cliente</label>
+              <input type="text" id="cfgDisplayPhone" placeholder="(35) 99970-2316" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Chave Pix da Loja</label>
+              <input type="text" id="cfgPixKey" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Beneficiário do Pix</label>
+              <input type="text" id="cfgPixOwner" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl">
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Endereço de Retirada no Balcão</label>
+              <input type="text" id="cfgAddress" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Taxa Padrão de Criação de Arte (R$)</label>
+              <input type="number" step="0.50" id="cfgArtFee" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">PIN de Acesso do Admin (Senha)</label>
+              <input type="text" maxlength="6" id="cfgAdminPin" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl">
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-100 flex justify-end">
+            <button onclick="admin.saveStoreSettings()" class="btn-primary text-xs py-2.5 px-5">
+              Salvar Alterações
+            </button>
+          </div>
+        </div>
+
+        <!-- Backup e Restauração -->
+        <div class="admin-card p-6 space-y-4">
+          <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
+            <i data-lucide="database" class="w-5 h-5 text-sky-600"></i> Backup & Segurança dos Dados
+          </h3>
+          <p class="text-xs text-slate-500">
+            Todos os seus pedidos, clientes, produtos e fluxo financeiro ficam salvos no navegador. Faça um backup regular para garantir a segurança dos seus dados caso troque de computador.
+          </p>
+
+          <div class="flex flex-wrap gap-3">
+            <button onclick="admin.downloadBackupJSON()" class="px-4 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition flex items-center gap-2">
+              <i data-lucide="download" class="w-4 h-4"></i> Baixar Backup Completo (JSON)
+            </button>
+
+            <label class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-50 transition flex items-center gap-2 cursor-pointer">
+              <i data-lucide="upload" class="w-4 h-4"></i> Restaurar Backup
+              <input type="file" accept=".json" onchange="admin.importBackupJSON(event)" class="hidden">
+            </label>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= MODAL: REGISTRAR NOVA VENDA (BALCÃO / NOTEBOOK) ================= -->
+  <div id="quickSaleModal" class="modal-overlay" onclick="if(event.target.id === 'quickSaleModal') admin.closeModal('quickSaleModal')">
+    <div class="modal-sheet max-w-md p-5">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-600"></i> Registrar Venda de Balcão
+        </h3>
+        <button onclick="admin.closeModal('quickSaleModal')" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Nome do Cliente *</label>
+          <input type="text" id="saleClientName" placeholder="Ex: Maria Padaria" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Produto / Descrição dos Impressos *</label>
+          <input type="text" id="saleDescription" placeholder="Ex: 500 Panfletos 10x14cm + 1 Banner" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Valor Cobrado (R$) *</label>
+            <input type="number" step="0.01" id="saleAmount" placeholder="150.00" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Custo Estimado (R$)</label>
+            <input type="number" step="0.01" id="saleCost" placeholder="45.00" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Forma de Pagamento</label>
+            <select id="salePaymentMethod" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl">
+              <option value="Pix">Pix</option>
+              <option value="Dinheiro">Dinheiro</option>
+              <option value="Cartão de Crédito">Cartão de Crédito</option>
+              <option value="Cartão de Débito">Cartão de Débito</option>
+              <option value="Boleto / Faturado">Boleto / Faturado</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Status Pagamento</label>
+            <select id="salePaymentStatus" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl">
+              <option value="pago">Pago Integralmente</option>
+              <option value="parcial">Sinal 50%</option>
+              <option value="pendente">A Pagar na Retirada</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-3">
+          <button onclick="admin.submitQuickSale()" class="btn-primary w-full bg-emerald-600 hover:bg-emerald-700 text-xs py-3">
+            Confirmar e Lançar Venda
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: REGISTRAR CUSTO / DESPESA ================= -->
+  <div id="quickExpenseModal" class="modal-overlay" onclick="if(event.target.id === 'quickExpenseModal') admin.closeModal('quickExpenseModal')">
+    <div class="modal-sheet max-w-md p-5">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <i data-lucide="minus-circle" class="w-5 h-5 text-red-500"></i> Lançar Custo ou Despesa
+        </h3>
+        <button onclick="admin.closeModal('quickExpenseModal')" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Categoria da Despesa *</label>
+          <select id="expenseCategory" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl font-medium">
+            <option value="Insumos & Papel">Insumos & Papel (Couché, Sulfite, Kraft)</option>
+            <option value="Tintas & Toners">Tintas & Toners para Impressão</option>
+            <option value="Terceirização">Terceirização de Acabamento / Gráfica Parceira</option>
+            <option value="Embalagens & Frete">Embalagens & Entregas</option>
+            <option value="Custos Fixos">Custos Fixos (Aluguel, Luz, Internet)</option>
+            <option value="Softwares & Licenças">Softwares (Adobe, Corel, IA)</option>
+            <option value="Outros">Outras Despesas</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Descrição do Custo *</label>
+          <input type="text" id="expenseDescription" placeholder="Ex: Compra 5 resmas Couché 300g" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Valor Gasto (R$) *</label>
+            <input type="number" step="0.01" id="expenseAmount" placeholder="120.00" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl font-bold text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Forma de Pagamento</label>
+            <select id="expensePaymentMethod" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl">
+              <option value="Pix">Pix</option>
+              <option value="Boleto">Boleto</option>
+              <option value="Cartão">Cartão</option>
+              <option value="Dinheiro">Dinheiro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-3">
+          <button onclick="admin.submitQuickExpense()" class="btn-primary w-full bg-slate-900 hover:bg-slate-800 text-xs py-3">
+            Lançar Despesa no Caixa
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="js/storage.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
