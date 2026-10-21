@@ -17,7 +17,8 @@ const STORAGE_KEYS = {
 const DEFAULT_CONFIG = {
   storeName: "Sul Design • Gráfica & Comunicação Visual",
   shortName: "Sul Design",
-  logoUrl: "img/logo.jpg",
+  logoUrl: "img/logo-full.png",
+  logoIconUrl: "img/logo-icon.png",
   tagline: "Comunicação visual, impressos de alta precisão e design profissional.",
   whatsappNumber: "5535999702316", // Número configurado
   displayPhone: "(35) 99970-2316",
@@ -82,7 +83,7 @@ const DEFAULT_PRODUCTS = [
       { id: "cantos-arredondados", label: "4 Cantos Arredondados", priceFixed: 15.00 }
     ],
     icon: "credit-card",
-    image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80"
+    image: "img/produtos/cartao-visita.jpg"
   },
   {
     id: "panfleto-flyer",
@@ -118,7 +119,7 @@ const DEFAULT_PRODUCTS = [
     ],
     extras: [],
     icon: "file-text",
-    image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=600&q=80"
+    image: "img/produtos/panfleto-flyer.jpg"
   },
   {
     id: "adesivo-vinil",
@@ -156,7 +157,7 @@ const DEFAULT_PRODUCTS = [
     ],
     extras: [],
     icon: "tag",
-    image: "https://images.unsplash.com/photo-1572375992501-4b0892d50c69?auto=format&fit=crop&w=600&q=80"
+    image: "img/produtos/adesivo-vinil.jpg"
   },
   {
     id: "banner-lona",
@@ -191,10 +192,10 @@ const DEFAULT_PRODUCTS = [
     ],
     extras: [],
     icon: "flag",
-    image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80"
+    image: "img/produtos/banner-lona.jpg"
   },
   {
-    id: "talão-recibo",
+    id: "talao-recibo",
     name: "Blocos de Pedido, Recibos & Receituários",
     category: "corporativo",
     categoryLabel: "Material Corporativo",
@@ -224,7 +225,7 @@ const DEFAULT_PRODUCTS = [
     ],
     extras: [],
     icon: "book",
-    image: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&w=600&q=80"
+    image: "img/produtos/talao-recibo.jpg"
   },
   {
     id: "pasta-personalizada",
@@ -255,7 +256,7 @@ const DEFAULT_PRODUCTS = [
     ],
     extras: [],
     icon: "folder",
-    image: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?auto=format&fit=crop&w=600&q=80"
+    image: "img/produtos/pasta-personalizada.jpg"
   },
   {
     id: "cardapio-plastificado",
@@ -287,7 +288,7 @@ const DEFAULT_PRODUCTS = [
     ],
     extras: [],
     icon: "coffee",
-    image: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=600&q=80"
+    image: "img/produtos/cardapio-plastificado.jpg"
   },
   {
     id: "caneca-personalizada",
@@ -321,7 +322,7 @@ const DEFAULT_PRODUCTS = [
       { id: "caixinha-presente", label: "Caixinha Individual de Presente", priceFixed: 4.50 }
     ],
     icon: "gift",
-    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80"
+    image: "img/produtos/caneca-personalizada.jpg"
   }
 ];
 
@@ -416,7 +417,7 @@ const DEFAULT_ORDERS = [
     total: 150.00,
     items: [
       {
-        productId: "talão-recibo",
+        productId: "talao-recibo",
         productName: "Blocos de Pedido, Recibos & Receituários",
         quantity: 10,
         quantityLabel: "10 blocos (500 folhas)",
@@ -560,9 +561,31 @@ class StorageManager {
   init() {
     if (!localStorage.getItem(STORAGE_KEYS.CONFIG)) {
       this.saveConfig(DEFAULT_CONFIG);
+    } else {
+      const cfg = this.getConfig();
+      if (!cfg.logoUrl || cfg.logoUrl === 'img/logo.jpg') {
+        cfg.logoUrl = DEFAULT_CONFIG.logoUrl;
+        cfg.logoIconUrl = DEFAULT_CONFIG.logoIconUrl;
+        this.saveConfig(cfg);
+      }
     }
+
     if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
       this.saveProducts(DEFAULT_PRODUCTS);
+    } else {
+      let storedProducts = this.getProducts();
+      let updated = false;
+      storedProducts = storedProducts.map(p => {
+        const match = DEFAULT_PRODUCTS.find(dp => dp.id === p.id || (dp.id === 'talao-recibo' && p.id === 'talão-recibo'));
+        if (match && (p.image.includes('unsplash.com') || p.id === 'talão-recibo')) {
+          updated = true;
+          return { ...p, id: match.id, image: match.image };
+        }
+        return p;
+      });
+      if (updated) {
+        this.saveProducts(storedProducts);
+      }
     }
     if (!localStorage.getItem(STORAGE_KEYS.ORDERS)) {
       // Pré-calcula a repartição dos pedidos iniciais

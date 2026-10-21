@@ -122,36 +122,36 @@ class GraphicShopApp {
           <div class="product-img-wrapper">
             <img src="${product.image}" alt="${product.name}" loading="lazy">
             ${product.badge ? `<span class="absolute top-3 left-3 ${badgeClass} shadow-sm">${product.badge}</span>` : ''}
-            <span class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
+            <span class="absolute bottom-3 right-3 bg-stone-900/85 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
               ⚡ ${product.turnaround}
             </span>
           </div>
 
           <div class="p-4 flex-1 flex flex-col justify-between">
             <div>
-              <span class="text-[11px] font-bold text-orange-600 uppercase tracking-wider block mb-1">
+              <span class="text-[11px] font-black text-orange-600 uppercase tracking-wider block mb-1">
                 ${product.categoryLabel}
               </span>
-              <h3 class="font-bold text-slate-900 text-base leading-snug mb-1">
+              <h3 class="font-black text-stone-900 text-base leading-snug mb-1">
                 ${product.name}
               </h3>
-              <p class="text-xs text-slate-500 line-clamp-2 mb-3">
+              <p class="text-xs text-stone-600 line-clamp-2 mb-3 leading-relaxed">
                 ${product.description}
               </p>
             </div>
 
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+            <div class="pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
               <div>
-                <span class="text-[10px] text-slate-400 font-semibold block leading-tight">A partir de</span>
+                <span class="text-[10px] text-stone-500 font-bold uppercase tracking-wider block leading-tight">A partir de</span>
                 <div class="flex items-baseline gap-0.5">
-                  <span class="text-xs font-bold text-slate-700">R$</span>
-                  <span class="text-lg font-black text-slate-900">${minPriceFormatted}</span>
+                  <span class="text-xs font-black text-stone-700">R$</span>
+                  <span class="text-xl font-black text-stone-900">${minPriceFormatted}</span>
                 </div>
               </div>
 
               <button 
                 onclick="app.openCalculator('${product.id}')"
-                class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 text-white font-bold text-xs hover:from-orange-500 hover:to-amber-500 active:scale-95 transition shadow-md shadow-orange-600/20 flex items-center gap-1.5"
+                class="px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-black text-xs active:scale-95 transition shadow-md shadow-orange-600/25 flex items-center gap-1.5"
               >
                 <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
                 Personalizar & Orçar
@@ -232,6 +232,11 @@ class GraphicShopApp {
     // Atualiza Cabeçalho do Modal
     document.getElementById('calcProductName').textContent = product.name;
     document.getElementById('calcProductTurnaround').textContent = `⚡ Prazo: ${product.turnaround}`;
+    const thumb = document.getElementById('calcProductThumb');
+    if (thumb) {
+      thumb.src = product.image;
+      thumb.alt = product.name;
+    }
 
     // 1. Renderiza Tiragens / Quantidades
     const qtyContainer = document.getElementById('calcQuantities');

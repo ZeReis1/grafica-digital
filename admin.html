@@ -62,12 +62,17 @@
   <!-- ================= TELA DE BLOQUEIO / PIN DE ACESSO ================= -->
   <div id="pinLockScreen" class="fixed inset-0 z-50 bg-stone-950 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl border border-stone-200">
-      <div class="w-16 h-16 rounded-2xl bg-white shadow-md shadow-orange-500/20 border border-orange-200 flex items-center justify-center mx-auto mb-4 p-1">
-        <img src="img/logo.jpg" alt="Sul Design" class="w-full h-full object-contain">
+      <!-- Logo Oficial com proporção correta e sem cortes -->
+      <div class="mb-4 flex items-center justify-center">
+        <div class="w-full max-w-[220px] p-3.5 rounded-2xl bg-white border border-stone-200/90 shadow-md flex items-center justify-center">
+          <img src="img/logo-full.png" alt="Sul Design • Gráfica & Comunicação Visual" class="w-full h-auto max-h-20 object-contain">
+        </div>
       </div>
-      <h2 class="text-xl font-black text-stone-900 mb-0.5">Sul Design</h2>
-      <span class="text-xs font-bold text-orange-600 block mb-1">Painel dos Sócios</span>
-      <p class="text-xs text-stone-500 mb-6">José Reis & Leonardo Monti • Gestão e Repartição de Lucros</p>
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-700 text-xs font-black mb-1">
+        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-orange-600"></i>
+        Painel dos Sócios
+      </div>
+      <p class="text-xs text-stone-600 font-semibold mb-6">José Reis & Leonardo Monti • Gestão e Repartição de Lucros</p>
 
       <div class="mb-4">
         <input 
@@ -75,17 +80,17 @@
           id="pinInput" 
           maxlength="6" 
           placeholder="••••" 
-          class="w-full text-center text-3xl font-black tracking-widest py-3 border-2 border-stone-200 rounded-2xl focus:outline-none focus:border-orange-500 bg-stone-50"
+          class="w-full text-center text-3xl font-black tracking-widest py-3 border-2 border-stone-300 rounded-2xl focus:outline-none focus:border-orange-500 bg-stone-50 text-stone-900"
           onkeyup="if(event.key === 'Enter') admin.unlockWithPin()"
         >
-        <span class="text-[11px] text-stone-400 mt-2 block">PIN padrão inicial: <strong>1234</strong></span>
+        <span class="text-xs text-stone-500 font-semibold mt-2 block">PIN padrão inicial: <strong class="text-stone-800">1234</strong></span>
       </div>
 
-      <button onclick="admin.unlockWithPin()" class="btn-primary w-full text-sm font-bold py-3.5 mb-3">
+      <button onclick="admin.unlockWithPin()" class="btn-primary w-full text-sm font-black py-3.5 mb-3 shadow-md shadow-orange-500/25">
         Desbloquear Painel
       </button>
 
-      <a href="index.html" class="text-xs font-semibold text-stone-500 hover:text-stone-800 block">
+      <a href="index.html" class="text-xs font-bold text-stone-600 hover:text-stone-900 block py-1">
         ← Voltar ao Catálogo do Cliente
       </a>
     </div>
@@ -97,48 +102,53 @@
     <!-- ================= SIDEBAR DESKTOP / NOTEBOOK ================= -->
     <aside class="w-full md:w-64 bg-stone-950 text-white flex-shrink-0 flex flex-col justify-between border-r border-stone-800">
       <div>
-        <!-- Logo do Admin -->
-        <div class="p-4 border-b border-stone-800 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-2xl bg-white shadow-md shadow-orange-500/25 border border-orange-300 flex items-center justify-center p-0.5 flex-shrink-0">
-              <img src="img/logo.jpg" alt="Sul Design" class="w-full h-full object-contain">
+        <!-- Logo e Identificação do Admin -->
+        <div class="p-3.5 border-b border-stone-800">
+          <div class="flex items-center justify-between gap-2.5 bg-stone-900/90 p-2.5 rounded-2xl border border-stone-800/80 shadow-sm">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-xl bg-white shadow-md shadow-orange-500/20 border border-orange-300/60 flex items-center justify-center p-1 flex-shrink-0">
+                <img src="img/logo-icon.png" alt="Sul Design" class="w-full h-full object-contain">
+              </div>
+              <div class="min-w-0">
+                <h1 id="adminStoreTitle" class="font-black text-sm tracking-tight leading-tight text-white truncate">Sul Design Admin</h1>
+                <span class="text-[10px] text-orange-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
+                  José & Leonardo
+                </span>
+              </div>
             </div>
-            <div>
-              <h1 id="adminStoreTitle" class="font-black text-sm tracking-tight leading-tight text-white">Sul Design Admin</h1>
-              <span class="text-[10px] text-orange-400 font-bold uppercase tracking-wider">José & Leonardo</span>
-            </div>
+            <!-- Link rápido para loja -->
+            <a href="index.html" target="_blank" class="text-stone-400 hover:text-white p-2 rounded-xl hover:bg-stone-800 transition flex-shrink-0" title="Ver Catálogo do Cliente">
+              <i data-lucide="external-link" class="w-4 h-4"></i>
+            </a>
           </div>
-          <!-- Link rápido para loja -->
-          <a href="index.html" target="_blank" class="text-stone-400 hover:text-white p-1.5 rounded-lg hover:bg-stone-800 transition" title="Ver Catálogo do Cliente">
-            <i data-lucide="external-link" class="w-4 h-4"></i>
-          </a>
         </div>
 
         <!-- Menu de Navegação do Notebook -->
-        <nav class="p-3 space-y-1 text-sm font-semibold">
+        <nav class="p-3 space-y-1 text-sm font-bold">
           <!-- Nova Aba Principal de Repartição de Lucros -->
-          <button onclick="admin.switchTab('split')" id="tabBtnSplit" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-emerald-600 text-white font-bold transition shadow-sm">
+          <button onclick="admin.switchTab('split')" id="tabBtnSplit" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-emerald-600 text-white font-black transition shadow-sm">
             <i data-lucide="users" class="w-5 h-5"></i>
             <span>Sócios & Repartição</span>
           </button>
 
-          <button onclick="admin.switchTab('orders')" id="tabBtnOrders" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+          <button onclick="admin.switchTab('orders')" id="tabBtnOrders" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-stone-300 hover:bg-stone-900 hover:text-white transition">
             <i data-lucide="package" class="w-5 h-5"></i>
             <span>Pedidos & Produção</span>
-            <span id="adminPendingOrdersBadge" class="ml-auto text-[10px] font-black bg-amber-500 text-slate-900 px-2 py-0.5 rounded-full">0</span>
+            <span id="adminPendingOrdersBadge" class="ml-auto text-[10px] font-black bg-amber-500 text-stone-950 px-2 py-0.5 rounded-full">0</span>
           </button>
 
-          <button onclick="admin.switchTab('finances')" id="tabBtnFinances" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+          <button onclick="admin.switchTab('finances')" id="tabBtnFinances" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-stone-300 hover:bg-stone-900 hover:text-white transition">
             <i data-lucide="dollar-sign" class="w-5 h-5"></i>
             <span>Fluxo de Caixa Geral</span>
           </button>
 
-          <button onclick="admin.switchTab('products')" id="tabBtnProducts" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+          <button onclick="admin.switchTab('products')" id="tabBtnProducts" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-stone-300 hover:bg-stone-900 hover:text-white transition">
             <i data-lucide="layers" class="w-5 h-5"></i>
             <span>Catálogo & Preços</span>
           </button>
 
-          <button onclick="admin.switchTab('settings')" id="tabBtnSettings" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+          <button onclick="admin.switchTab('settings')" id="tabBtnSettings" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-stone-300 hover:bg-stone-900 hover:text-white transition">
             <i data-lucide="settings" class="w-5 h-5"></i>
             <span>Configurações & Pix</span>
           </button>
@@ -146,23 +156,23 @@
       </div>
 
       <!-- Rodapé da Sidebar com Identificação dos Sócios -->
-      <div class="p-4 border-t border-slate-800 space-y-2">
-        <div class="text-[11px] text-slate-400 bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/60">
-          <div class="flex items-center justify-between mb-1">
-            <span class="font-bold text-slate-200">José Reis</span>
-            <span class="text-[10px] text-emerald-400 font-semibold">Atendimento & Arte</span>
+      <div class="p-4 border-t border-stone-800 space-y-2">
+        <div class="text-[11px] text-stone-300 bg-stone-900/90 p-2.5 rounded-xl border border-stone-800">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="font-bold text-white">José Reis</span>
+            <span class="text-[10px] text-emerald-400 font-bold bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/40">Atendimento & Arte</span>
           </div>
           <div class="flex items-center justify-between">
-            <span class="font-bold text-slate-200">Leonardo Monti</span>
-            <span class="text-[10px] text-sky-400 font-semibold">Produção & Corte</span>
+            <span class="font-bold text-white">Leonardo Monti</span>
+            <span class="text-[10px] text-sky-400 font-bold bg-sky-950/60 px-1.5 py-0.5 rounded border border-sky-800/40">Produção & Corte</span>
           </div>
         </div>
 
-        <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
-          <span class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Conectado
+        <div class="flex items-center justify-between text-xs text-stone-300 pt-1">
+          <span class="flex items-center gap-1.5 font-semibold">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Conectado
           </span>
-          <button onclick="admin.lockPanel()" class="text-slate-400 hover:text-red-400 font-semibold flex items-center gap-1 transition">
+          <button onclick="admin.lockPanel()" class="text-stone-400 hover:text-red-400 font-bold flex items-center gap-1 transition">
             <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sair
           </button>
         </div>
@@ -236,30 +246,30 @@
             </div>
 
             <div class="mt-3">
-              <span class="text-[11px] text-slate-500 font-semibold block">Total a Receber / Sacar:</span>
+              <span class="text-xs text-stone-600 font-bold block">Total a Receber / Sacar:</span>
               <div class="flex items-baseline gap-1 mt-0.5">
-                <span class="text-xs font-bold text-slate-500">R$</span>
+                <span class="text-xs font-black text-stone-700">R$</span>
                 <span id="splitTotalJose" class="text-2xl font-black text-emerald-700">0,00</span>
               </div>
             </div>
 
             <!-- Breakdown de José -->
-            <div class="mt-4 pt-3 border-t border-slate-100 space-y-1 text-xs text-slate-600">
+            <div class="mt-4 pt-3 border-t border-stone-200/80 space-y-1.5 text-xs text-stone-700">
               <div class="flex justify-between">
                 <span>💬 Atendimentos (15%):</span>
-                <strong id="subJoseAtendimento" class="text-slate-800">R$ 0,00</strong>
+                <strong id="subJoseAtendimento" class="text-stone-900 font-black">R$ 0,00</strong>
               </div>
               <div class="flex justify-between">
                 <span>🎨 Criação de Arte (15%):</span>
-                <strong id="subJoseArte" class="text-slate-800">R$ 0,00</strong>
+                <strong id="subJoseArte" class="text-stone-900 font-black">R$ 0,00</strong>
               </div>
               <div class="flex justify-between">
                 <span>⚙️ Produção (25%):</span>
-                <strong id="subJoseProducao" class="text-slate-800">R$ 0,00</strong>
+                <strong id="subJoseProducao" class="text-stone-900 font-black">R$ 0,00</strong>
               </div>
-              <div class="flex justify-between text-emerald-800 font-bold pt-1 border-t border-slate-100">
+              <div class="flex justify-between text-emerald-900 font-black pt-1.5 border-t border-stone-200">
                 <span>💎 Divisão de Lucro (50%):</span>
-                <strong id="subJoseLucro">R$ 0,00</strong>
+                <strong id="subJoseLucro" class="text-emerald-700 font-black">R$ 0,00</strong>
               </div>
             </div>
           </div>
@@ -268,8 +278,8 @@
           <div class="admin-card p-5 border-t-4 border-t-sky-500 bg-gradient-to-b from-sky-50/40 to-white">
             <div class="flex items-center justify-between mb-2">
               <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-sky-700 block">Sócio 2</span>
-                <h3 class="font-black text-slate-900 text-base">Leonardo Monti</h3>
+                <span class="text-[11px] font-black uppercase tracking-wider text-sky-700 block">Sócio 2</span>
+                <h3 class="font-black text-stone-900 text-base">Leonardo Monti</h3>
               </div>
               <div class="w-9 h-9 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center font-black text-xs">
                 LM
@@ -277,55 +287,55 @@
             </div>
 
             <div class="mt-3">
-              <span class="text-[11px] text-slate-500 font-semibold block">Total a Receber / Sacar:</span>
+              <span class="text-xs text-stone-600 font-bold block">Total a Receber / Sacar:</span>
               <div class="flex items-baseline gap-1 mt-0.5">
-                <span class="text-xs font-bold text-slate-500">R$</span>
+                <span class="text-xs font-black text-stone-700">R$</span>
                 <span id="splitTotalLeonardo" class="text-2xl font-black text-sky-700">0,00</span>
               </div>
             </div>
 
             <!-- Breakdown de Leonardo -->
-            <div class="mt-4 pt-3 border-t border-slate-100 space-y-1 text-xs text-slate-600">
+            <div class="mt-4 pt-3 border-t border-stone-200/80 space-y-1.5 text-xs text-stone-700">
               <div class="flex justify-between">
                 <span>💬 Atendimentos (15%):</span>
-                <strong id="subLeoAtendimento" class="text-slate-800">R$ 0,00</strong>
+                <strong id="subLeoAtendimento" class="text-stone-900 font-black">R$ 0,00</strong>
               </div>
               <div class="flex justify-between">
                 <span>🎨 Criação de Arte (15%):</span>
-                <strong id="subLeoArte" class="text-slate-800">R$ 0,00</strong>
+                <strong id="subLeoArte" class="text-stone-900 font-black">R$ 0,00</strong>
               </div>
               <div class="flex justify-between">
                 <span>⚙️ Produção (25%):</span>
-                <strong id="subLeoProducao" class="text-slate-800">R$ 0,00</strong>
+                <strong id="subLeoProducao" class="text-stone-900 font-black">R$ 0,00</strong>
               </div>
-              <div class="flex justify-between text-sky-800 font-bold pt-1 border-t border-slate-100">
+              <div class="flex justify-between text-sky-900 font-black pt-1.5 border-t border-stone-200">
                 <span>💎 Divisão de Lucro (50%):</span>
-                <strong id="subLeoLucro">R$ 0,00</strong>
+                <strong id="subLeoLucro" class="text-sky-700 font-black">R$ 0,00</strong>
               </div>
             </div>
           </div>
 
           <!-- CARD CAIXA DA EMPRESA (10%) -->
-          <div class="admin-card p-5 border-t-4 border-t-slate-800">
+          <div class="admin-card p-5 border-t-4 border-t-stone-800">
             <div class="flex items-center justify-between mb-2">
               <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Reserva (10%)</span>
-                <h3 class="font-black text-slate-900 text-base">Caixa da Empresa</h3>
+                <span class="text-[11px] font-black uppercase tracking-wider text-stone-600 block">Reserva (10%)</span>
+                <h3 class="font-black text-stone-900 text-base">Caixa da Empresa</h3>
               </div>
-              <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+              <div class="w-9 h-9 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center">
                 <i data-lucide="landmark" class="w-5 h-5"></i>
               </div>
             </div>
 
             <div class="mt-3">
-              <span class="text-[11px] text-slate-500 font-semibold block">Saldo Acumulado no Caixa:</span>
+              <span class="text-xs text-stone-600 font-bold block">Saldo Acumulado no Caixa:</span>
               <div class="flex items-baseline gap-1 mt-0.5">
-                <span class="text-xs font-bold text-slate-500">R$</span>
-                <span id="splitTotalCaixa" class="text-2xl font-black text-slate-900">0,00</span>
+                <span class="text-xs font-black text-stone-700">R$</span>
+                <span id="splitTotalCaixa" class="text-2xl font-black text-stone-900">0,00</span>
               </div>
             </div>
 
-            <p class="text-[11px] text-slate-500 mt-4 pt-3 border-t border-slate-100">
+            <p class="text-xs text-stone-600 font-medium mt-4 pt-3 border-t border-stone-200/80 leading-relaxed">
               Blindado para manutenção de máquinas, tintas, insumos e capital de giro.
             </p>
           </div>
@@ -334,8 +344,8 @@
           <div class="admin-card p-5 border-t-4 border-t-amber-500">
             <div class="flex items-center justify-between mb-2">
               <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-amber-600 block">Marketing (15%)</span>
-                <h3 class="font-black text-slate-900 text-base">Fundo de Anúncios</h3>
+                <span class="text-[11px] font-black uppercase tracking-wider text-amber-700 block">Marketing (15%)</span>
+                <h3 class="font-black text-stone-900 text-base">Fundo de Anúncios</h3>
               </div>
               <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
                 <i data-lucide="megaphone" class="w-5 h-5"></i>
@@ -343,14 +353,14 @@
             </div>
 
             <div class="mt-3">
-              <span class="text-[11px] text-slate-500 font-semibold block">Verba para Tráfego Pago:</span>
+              <span class="text-xs text-stone-600 font-bold block">Verba para Tráfego Pago:</span>
               <div class="flex items-baseline gap-1 mt-0.5">
-                <span class="text-xs font-bold text-slate-500">R$</span>
+                <span class="text-xs font-black text-stone-700">R$</span>
                 <span id="splitTotalCaptacao" class="text-2xl font-black text-amber-700">0,00</span>
               </div>
             </div>
 
-            <p class="text-[11px] text-slate-500 mt-4 pt-3 border-t border-slate-100">
+            <p class="text-xs text-stone-600 font-medium mt-4 pt-3 border-t border-stone-200/80 leading-relaxed">
               Gerado por vendas de anúncios. Quando a venda é orgânica, esses 15% viram lucro direto para José e Leonardo!
             </p>
           </div>

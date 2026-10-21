@@ -56,12 +56,12 @@
     <div class="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
       <!-- Logo Oficial da Sul Design -->
       <a href="index.html" class="flex items-center gap-2.5 text-decoration-none">
-        <div class="w-11 h-11 rounded-2xl overflow-hidden bg-white shadow-md shadow-orange-500/15 border border-orange-200/80 flex items-center justify-center p-0.5 flex-shrink-0">
-          <img src="img/logo.jpg" alt="Sul Design" class="w-full h-full object-contain">
+        <div class="w-11 h-11 rounded-2xl overflow-hidden bg-white shadow-md shadow-orange-500/15 border border-orange-200/80 flex items-center justify-center p-1 flex-shrink-0">
+          <img src="img/logo-icon.png" alt="Sul Design" class="w-full h-full object-contain">
         </div>
         <div>
           <span id="headerStoreName" class="font-black text-stone-900 tracking-tight text-base sm:text-lg block leading-tight">Sul Design</span>
-          <span class="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+          <span class="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Balcão Online Aberto
           </span>
         </div>
@@ -107,7 +107,7 @@
         <h1 class="text-xl sm:text-2xl font-black tracking-tight leading-snug">
           Comunicação visual e impressos de alta definição para destacar seu negócio!
         </h1>
-        <p class="text-xs sm:text-sm text-stone-300 mt-2 font-medium">
+        <p class="text-xs sm:text-sm text-stone-200 mt-2 font-medium">
           Simule seu orçamento em tempo real com acabamentos nobres e envie o pedido no WhatsApp.
         </p>
 
@@ -115,15 +115,15 @@
         <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/10 text-center">
           <div>
             <span class="block text-orange-400 font-extrabold text-xs sm:text-sm">⚡ 24h a 48h</span>
-            <span class="text-[10px] text-stone-400 font-medium">Produção Ágil</span>
+            <span class="text-[10px] text-stone-300 font-semibold">Produção Ágil</span>
           </div>
           <div>
             <span class="block text-emerald-400 font-extrabold text-xs sm:text-sm">🎨 Criação de Arte</span>
-            <span class="text-[10px] text-stone-400 font-medium">Design Profissional</span>
+            <span class="text-[10px] text-stone-300 font-semibold">Design Profissional</span>
           </div>
           <div>
             <span class="block text-amber-400 font-extrabold text-xs sm:text-sm">💳 Pix & Cartão</span>
-            <span class="text-[10px] text-stone-400 font-medium">Facilidade</span>
+            <span class="text-[10px] text-stone-300 font-semibold">Facilidade</span>
           </div>
         </div>
       </div>
@@ -203,7 +203,7 @@
     <div class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6">
       <div>
         <div class="flex items-center gap-2 mb-2">
-          <img src="img/logo.jpg" alt="Sul Design" class="w-8 h-8 rounded-lg object-contain border border-stone-200">
+          <img src="img/logo-icon.png" alt="Sul Design" class="w-8 h-8 rounded-lg object-contain border border-stone-200">
           <h4 id="footerStoreName" class="font-black text-stone-900 text-sm">Sul Design</h4>
         </div>
         <p id="footerTagline" class="text-stone-500 mb-3">Comunicação visual e impressos de alta precisão com acabamento impecável.</p>
@@ -277,17 +277,17 @@
       <div class="sheet-handle"></div>
 
       <!-- Header do Modal -->
-      <div class="p-4 border-b border-stone-100 flex items-center justify-between">
+      <div class="p-4 border-b border-stone-100 flex items-center justify-between bg-stone-50/60">
         <div class="flex items-center gap-3">
-          <div id="calcProductIcon" class="w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold">
-            <i data-lucide="printer" class="w-5 h-5"></i>
+          <div class="w-12 h-12 rounded-xl bg-white border border-stone-200 shadow-sm flex items-center justify-center p-1 flex-shrink-0 overflow-hidden">
+            <img id="calcProductThumb" src="img/produtos/cartao-visita.jpg" alt="" class="w-full h-full object-contain">
           </div>
           <div>
             <h3 id="calcProductName" class="font-black text-stone-900 text-base leading-tight">Configurar Produto</h3>
-            <span id="calcProductTurnaround" class="text-xs text-stone-500 font-medium">⚡ 2 a 3 dias úteis</span>
+            <span id="calcProductTurnaround" class="text-xs text-stone-600 font-semibold">⚡ 2 a 3 dias úteis</span>
           </div>
         </div>
-        <button onclick="app.closeCalculatorModal()" class="w-8 h-8 rounded-full bg-stone-100 text-stone-500 hover:bg-stone-200 flex items-center justify-center">
+        <button onclick="app.closeCalculatorModal()" class="w-8 h-8 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-900 flex items-center justify-center transition">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>

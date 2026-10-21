@@ -909,22 +909,22 @@ ${sp.arteValor > 0 ? `🎨 Criação de Arte (15%): R$ ${Number(sp.arteValor).to
     container.innerHTML = products.map(prod => `
       <div class="admin-card p-4 flex flex-col justify-between">
         <div>
-          <div class="aspect-video w-full rounded-xl overflow-hidden bg-slate-100 mb-3 relative">
-            <img src="${prod.image}" class="w-full h-full object-cover">
-            <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+          <div class="aspect-video w-full rounded-xl overflow-hidden bg-white border border-stone-200 mb-3 relative flex items-center justify-center p-2">
+            <img src="${prod.image}" alt="${prod.name}" class="w-full h-full object-contain">
+            <span class="absolute top-2 left-2 bg-stone-900/90 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-sm">
               ${prod.categoryLabel}
             </span>
           </div>
-          <h4 class="font-bold text-slate-900 text-sm mb-1">${prod.name}</h4>
-          <p class="text-xs text-slate-500 line-clamp-2 mb-2">${prod.description}</p>
+          <h4 class="font-black text-stone-900 text-sm mb-1">${prod.name}</h4>
+          <p class="text-xs text-stone-600 line-clamp-2 mb-2 leading-relaxed">${prod.description}</p>
         </div>
 
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+        <div class="pt-3 border-t border-stone-100 flex items-center justify-between">
           <div>
-            <span class="text-[10px] text-slate-400 block font-semibold">Preço Base</span>
-            <span class="text-sm font-black text-slate-900">R$ ${Number(prod.basePrice).toFixed(2).replace('.', ',')}</span>
+            <span class="text-[10px] text-stone-500 block font-bold uppercase tracking-wider">Preço Base</span>
+            <span class="text-sm font-black text-stone-900">R$ ${Number(prod.basePrice).toFixed(2).replace('.', ',')}</span>
           </div>
-          <button onclick="admin.deleteProductPrompt('${prod.id}')" class="text-slate-400 hover:text-red-500 p-2 transition" title="Remover do Catálogo">
+          <button onclick="admin.deleteProductPrompt('${prod.id}')" class="text-stone-400 hover:text-red-500 p-2 transition" title="Remover do Catálogo">
             <i data-lucide="trash-2" class="w-4 h-4"></i>
           </button>
         </div>
