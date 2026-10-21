@@ -1,12 +1,14 @@
 /**
- * ADMIN.JS - Gestão de Pedidos, Produção e Fluxo de Caixa da Gráfica
+ * ADMIN.JS - Gestão de Pedidos, Produção, Fluxo de Caixa e Repartição de Sócios
+ * Sócios: José Reis & Leonardo Monti
  * Otimizado para alta produtividade no Notebook/PC e 100% responsivo para Mobile.
  */
 
 class GraphicShopAdmin {
   constructor() {
-    this.currentTab = 'finances';
-    this.periodFilter = 'all';
+    this.currentTab = 'split'; // Abre direto na Repartição de Sócios
+    this.splitPeriod = 'all';
+    this.financePeriod = 'all';
     this.orderStatusFilter = 'all';
     this.orderSearchQuery = '';
     this.cashFlowChart = null;
@@ -18,7 +20,7 @@ class GraphicShopAdmin {
   init() {
     this.checkAuth();
 
-    // Sincronização em tempo real quando clientes fazem pedidos no catálogo
+    // Sincronização em tempo real quando clientes fazem pedidos no catálogo ou WhatsApp
     window.addEventListener('grafica-data-change', (e) => {
       this.refreshCurrentView();
     });
@@ -78,7 +80,7 @@ class GraphicShopAdmin {
     const titleEl = document.getElementById('adminStoreTitle');
     if (titleEl) titleEl.textContent = `${config.shortName || 'PrintPro'} Admin`;
 
-    this.switchTab('finances');
+    this.switchTab('split');
     this.updatePendingOrdersBadge();
   }
 
@@ -87,23 +89,26 @@ class GraphicShopAdmin {
 
     // Seções
     const sections = {
-      finances: document.getElementById('tabFinances'),
+      split: document.getElementById('tabSplit'),
       orders: document.getElementById('tabOrders'),
+      finances: document.getElementById('tabFinances'),
       products: document.getElementById('tabProducts'),
       settings: document.getElementById('tabSettings')
     };
 
     // Botões Sidebar
     const buttons = {
-      finances: document.getElementById('tabBtnFinances'),
+      split: document.getElementById('tabBtnSplit'),
       orders: document.getElementById('tabBtnOrders'),
+      finances: document.getElementById('tabBtnFinances'),
       products: document.getElementById('tabBtnProducts'),
       settings: document.getElementById('tabBtnSettings')
     };
 
     const titles = {
-      finances: "Fluxo de Caixa & Finanças da Gráfica",
+      split: "Repartição de Lucros dos Sócios • José Reis & Leonardo Monti",
       orders: "Gestão de Pedidos & Fila de Produção",
+      finances: "Fluxo de Caixa Geral & Despesas",
       products: "Catálogo & Tabela de Preços",
       settings: "Configurações Gerais & Chave Pix"
     };
@@ -119,7 +124,7 @@ class GraphicShopAdmin {
 
       if (buttons[key]) {
         if (key === tab) {
-          buttons[key].className = "w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-sky-600 text-white font-bold transition shadow-sm";
+          buttons[key].className = "w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-emerald-600 text-white font-bold transition shadow-sm";
         } else {
           buttons[key].className = "w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-semibold transition";
         }
@@ -133,7 +138,9 @@ class GraphicShopAdmin {
   }
 
   refreshCurrentView() {
-    if (this.currentTab === 'finances') {
+    if (this.currentTab === 'split') {
+      this.renderPartnersSplit();
+    } else if (this.currentTab === 'finances') {
       this.updateKPIs();
       this.renderCharts();
       this.renderFinanceTable();
@@ -159,9 +166,329 @@ class GraphicShopAdmin {
     }
   }
 
-  // ================= MÓDULO FINANCEIRO (NOTEBOOK / PC) =================
+  // ================= REPARTIÇÃO DE SÓCIOS (JOSÉ & LEONARDO) =================
+  setSplitPeriod(period, btnEl) {
+    this.splitPeriod = period;
+    document.querySelectorAll('.split-period-btn').forEach(b => {
+      b.className = "split-period-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900";
+    });
+    if (btnEl) btnEl.className = "split-period-btn px-3 py-1.5 rounded-lg active bg-white text-slate-900 font-bold shadow-sm";
+
+    this.renderPartnersSplit();
+  }
+
+  renderPartnersSplit() {
+    const data = window.storage.getPartnersMetrics(this.splitPeriod);
+
+    // Cards Totais
+    const elJose = document.getElementById('splitTotalJose');
+    if (elJose) elJose.textContent = data.totalJose.toFixed(2).replace('.', ',');
+
+    const elLeo = document.getElementById('splitTotalLeonardo');
+    if (elLeo) elLeo.textContent = data.totalLeonardo.toFixed(2).replace('.', ',');
+
+    const elCaixa = document.getElementById('splitTotalCaixa');
+    if (elCaixa) elCaixa.textContent = data.totalCaixa.toFixed(2).replace('.', ',');
+
+    const elCaptacao = document.getElementById('splitTotalCaptacao');
+    if (elCaptacao) elCaptacao.textContent = data.totalCaptacao.toFixed(2).replace('.', ',');
+
+    // Sub-itens José
+    const subJoseAt = document.getElementById('subJoseAtendimento');
+    if (subJoseAt) subJoseAt.textContent = `R$ ${data.breakdownJose.atendimento.toFixed(2).replace('.', ',')}`;
+    const subJoseAr = document.getElementById('subJoseArte');
+    if (subJoseAr) subJoseAr.textContent = `R$ ${data.breakdownJose.arte.toFixed(2).replace('.', ',')}`;
+    const subJosePr = document.getElementById('subJoseProducao');
+    if (subJosePr) subJosePr.textContent = `R$ ${data.breakdownJose.producao.toFixed(2).replace('.', ',')}`;
+    const subJoseLu = document.getElementById('subJoseLucro');
+    if (subJoseLu) subJoseLu.textContent = `R$ ${data.breakdownJose.lucro.toFixed(2).replace('.', ',')}`;
+
+    // Sub-itens Leonardo
+    const subLeoAt = document.getElementById('subLeoAtendimento');
+    if (subLeoAt) subLeoAt.textContent = `R$ ${data.breakdownLeonardo.atendimento.toFixed(2).replace('.', ',')}`;
+    const subLeoAr = document.getElementById('subLeoArte');
+    if (subLeoAr) subLeoAr.textContent = `R$ ${data.breakdownLeonardo.arte.toFixed(2).replace('.', ',')}`;
+    const subLeoPr = document.getElementById('subLeoProducao');
+    if (subLeoPr) subLeoPr.textContent = `R$ ${data.breakdownLeonardo.producao.toFixed(2).replace('.', ',')}`;
+    const subLeoLu = document.getElementById('subLeoLucro');
+    if (subLeoLu) subLeoLu.textContent = `R$ ${data.breakdownLeonardo.lucro.toFixed(2).replace('.', ',')}`;
+
+    // Renderiza Tabela DRE
+    const tableBody = document.getElementById('splitTableBody');
+    if (!tableBody) return;
+
+    if (data.orders.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="9" class="text-center py-8 text-slate-400 text-xs font-semibold">
+            Nenhum pedido encontrado no período selecionado.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const channelBadges = {
+      whatsapp: '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">💬 WhatsApp</span>',
+      balcao: '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">🏬 Balcão</span>',
+      site: '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-800">🌐 Site</span>',
+      indicacao: '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">🤝 Indicação</span>',
+      trafego_pago: '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">📢 Anúncio</span>'
+    };
+
+    tableBody.innerHTML = data.orders.map(order => {
+      const sp = order.profitSplit;
+      const channelHtml = channelBadges[order.channel] || channelBadges.whatsapp;
+
+      return `
+        <tr>
+          <td data-label="Pedido">
+            <div class="font-mono text-xs font-black text-slate-900">${order.id}</div>
+            ${channelHtml}
+          </td>
+          <td data-label="Cliente" class="font-semibold text-xs text-slate-800">
+            ${order.clientName}
+          </td>
+          <td data-label="Valor Bruto" class="font-bold text-xs text-slate-900">
+            R$ ${Number(order.total).toFixed(2).replace('.', ',')}
+          </td>
+          <td data-label="(-) Custo" class="text-xs text-red-600 font-medium">
+            - R$ ${Number(sp.cost).toFixed(2).replace('.', ',')}
+          </td>
+          <td data-label="(=) Margem" class="font-bold text-xs text-slate-700">
+            R$ ${Number(sp.margin).toFixed(2).replace('.', ',')}
+          </td>
+          <td data-label="Caixa (10%)" class="text-xs text-slate-600 font-semibold">
+            R$ ${Number(sp.caixaEmpresa).toFixed(2).replace('.', ',')}
+          </td>
+          <td data-label="José Reis" class="font-black text-xs text-emerald-700 bg-emerald-50/50">
+            R$ ${Number(sp.totalJose).toFixed(2).replace('.', ',')}
+          </td>
+          <td data-label="Leonardo Monti" class="font-black text-xs text-sky-700 bg-sky-50/50">
+            R$ ${Number(sp.totalLeonardo).toFixed(2).replace('.', ',')}
+          </td>
+          <td data-label="Ações">
+            <button onclick="admin.viewOrderSplitDetail('${order.id}')" class="text-xs font-bold text-sky-600 hover:text-sky-800 flex items-center gap-1">
+              <i data-lucide="eye" class="w-3.5 h-3.5"></i> Ver Split
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  // ================= MODAL DE REGISTRO RÁPIDO DE PEDIDOS (WHATSAPP / BALCÃO) =================
+  openQuickOrderModal() {
+    const modal = document.getElementById('quickOrderModal');
+    if (!modal) return;
+
+    // Reseta inputs
+    const el = (id) => document.getElementById(id);
+    if (el('orderClientName')) el('orderClientName').value = '';
+    if (el('orderClientPhone')) el('orderClientPhone').value = '';
+    if (el('orderDescription')) el('orderDescription').value = '';
+    if (el('orderAmount')) el('orderAmount').value = '';
+    if (el('orderCost')) el('orderCost').value = '';
+
+    this.updateSplitPreview();
+    modal.classList.add('active');
+  }
+
+  updateSplitPreview() {
+    const amount = Number(document.getElementById('orderAmount')?.value) || 0;
+    let cost = Number(document.getElementById('orderCost')?.value);
+
+    // Sugestão automática de custo se vazio (30% do valor)
+    if (isNaN(cost) || cost === 0) {
+      cost = Number((amount * 0.30).toFixed(2));
+      const costInput = document.getElementById('orderCost');
+      if (costInput && amount > 0 && !costInput.value) {
+        costInput.placeholder = cost.toFixed(2);
+      }
+    }
+
+    const channelRadio = document.querySelector('input[name="orderChannel"]:checked');
+    const channel = channelRadio ? channelRadio.value : 'whatsapp';
+    const isOrganic = (channel !== 'trafego_pago');
+
+    const artRadio = document.querySelector('input[name="splitArt"]:checked');
+    const artValue = artRadio ? artRadio.value : 'ready';
+    const artStatus = (artValue === 'ready') ? 'ready' : 'need_design';
+    const artAssignee = (artValue === 'ready') ? null : artValue;
+
+    const attRadio = document.querySelector('input[name="splitAttendance"]:checked');
+    const attendanceAssignee = attRadio ? attRadio.value : 'jose';
+
+    const prodRadio = document.querySelector('input[name="splitProduction"]:checked');
+    const productionAssignee = prodRadio ? prodRadio.value : 'leonardo';
+
+    const split = window.storage.calculateProfitSplit(amount, cost, {
+      channel,
+      isOrganic,
+      artStatus,
+      attendanceAssignee,
+      artAssignee,
+      productionAssignee
+    });
+
+    const elMargin = document.getElementById('previewMargin');
+    if (elMargin) elMargin.textContent = `R$ ${split.margin.toFixed(2).replace('.', ',')}`;
+
+    const elJose = document.getElementById('previewJose');
+    if (elJose) elJose.textContent = `R$ ${split.totalJose.toFixed(2).replace('.', ',')}`;
+
+    const elLeo = document.getElementById('previewLeonardo');
+    if (elLeo) elLeo.textContent = `R$ ${split.totalLeonardo.toFixed(2).replace('.', ',')}`;
+
+    const elCaixa = document.getElementById('previewCaixa');
+    if (elCaixa) elCaixa.textContent = `R$ ${split.caixaEmpresa.toFixed(2).replace('.', ',')}`;
+  }
+
+  submitQuickOrder() {
+    const name = document.getElementById('orderClientName')?.value.trim();
+    const phone = document.getElementById('orderClientPhone')?.value.trim() || '';
+    const desc = document.getElementById('orderDescription')?.value.trim();
+    const amount = Number(document.getElementById('orderAmount')?.value);
+    let cost = Number(document.getElementById('orderCost')?.value);
+
+    if (isNaN(cost) || cost === 0) {
+      cost = Number((amount * 0.30).toFixed(2));
+    }
+
+    if (!name || !desc || isNaN(amount) || amount <= 0) {
+      alert('Por favor, informe o Nome do Cliente, a Descrição do Material e o Valor Cobrado.');
+      return;
+    }
+
+    const channelRadio = document.querySelector('input[name="orderChannel"]:checked');
+    const channel = channelRadio ? channelRadio.value : 'whatsapp';
+    const isOrganic = (channel !== 'trafego_pago');
+
+    const artRadio = document.querySelector('input[name="splitArt"]:checked');
+    const artValue = artRadio ? artRadio.value : 'ready';
+    const artStatus = (artValue === 'ready') ? 'ready' : 'need_design';
+    const artAssignee = (artValue === 'ready') ? null : artValue;
+
+    const attRadio = document.querySelector('input[name="splitAttendance"]:checked');
+    const attendanceAssignee = attRadio ? attRadio.value : 'jose';
+
+    const prodRadio = document.querySelector('input[name="splitProduction"]:checked');
+    const productionAssignee = prodRadio ? prodRadio.value : 'leonardo';
+
+    const paymentMethod = document.getElementById('orderPaymentMethod')?.value || 'Pix';
+    const paymentStatus = document.getElementById('orderPaymentStatus')?.value || 'pago';
+
+    // Cria o Pedido Completo com Repartição
+    const newOrder = window.storage.createOrder({
+      clientName: name,
+      clientPhone: phone.replace(/\D/g, ''),
+      channel,
+      isOrganic,
+      deliveryType: channel === 'balcao' ? 'balcao' : 'entrega',
+      address: '',
+      notes: `Pedido lançado via ${channel === 'whatsapp' ? 'WhatsApp' : channel}.`,
+      artStatus,
+      status: 'producao',
+      paymentStatus,
+      paymentMethod,
+      attendanceAssignee,
+      artAssignee,
+      productionAssignee,
+      cost,
+      total: amount,
+      items: [
+        {
+          productName: desc,
+          quantityLabel: "1 lote",
+          paper: "Padrão de Qualidade",
+          finish: "Conforme combinado",
+          total: amount
+        }
+      ]
+    });
+
+    // Se houve custo, registra como despesa de insumo
+    if (cost > 0) {
+      window.storage.addFinance({
+        type: "despesa",
+        category: "Insumos & Papel",
+        description: `Insumos ${newOrder.id} (${name})`,
+        amount: cost,
+        paymentMethod: paymentMethod,
+        orderId: newOrder.id
+      });
+    }
+
+    this.closeModal('quickOrderModal');
+    this.refreshCurrentView();
+    alert(`Pedido ${newOrder.id} lançado com sucesso! Repartição entre José e Leonardo computada.`);
+  }
+
+  viewOrderSplitDetail(orderId) {
+    const order = window.storage.getOrderById(orderId);
+    if (!order) return;
+
+    const sp = order.profitSplit;
+    const msg = `
+📊 REPARTIÇÃO DO PEDIDO #${order.id}
+👤 Cliente: ${order.clientName}
+💰 Valor Bruto: R$ ${Number(order.total).toFixed(2)}
+📦 Custo Insumos: R$ ${Number(sp.cost).toFixed(2)}
+💵 Margem Líquida: R$ ${Number(sp.margin).toFixed(2)}
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+🏦 Caixa da Empresa (10%): R$ ${Number(sp.caixaEmpresa).toFixed(2)}
+${sp.captacaoValor > 0 ? `📢 Fundo de Tráfego/Ads (15%): R$ ${Number(sp.captacaoValor).toFixed(2)}\n` : '📢 Captação Orgânica: +15% revertido para Lucros!\n'}
+${sp.arteValor > 0 ? `🎨 Criação de Arte (15%): R$ ${Number(sp.arteValor).toFixed(2)}\n` : '🎨 Arte Própria do Cliente: +15% revertido para Lucros!\n'}
+💬 Atendimento (15%): R$ ${Number(sp.atendimentoValor).toFixed(2)}
+⚙️ Produção (25%): R$ ${Number(sp.producaoValor).toFixed(2)}
+💎 Divisão Lucro Líquido: R$ ${Number(sp.lucroPoolTotal).toFixed(2)} (50/50)
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+🟢 TOTAL JOSÉ REIS: R$ ${Number(sp.totalJose).toFixed(2)}
+🔵 TOTAL LEONARDO MONTI: R$ ${Number(sp.totalLeonardo).toFixed(2)}
+    `;
+
+    alert(msg);
+  }
+
+  openSplitRulesModal() {
+    const modal = document.getElementById('splitRulesModal');
+    if (modal) modal.classList.add('active');
+  }
+
+  exportPartnersCSV() {
+    const data = window.storage.getPartnersMetrics(this.splitPeriod);
+    if (data.orders.length === 0) {
+      alert('Nenhum pedido no período selecionado.');
+      return;
+    }
+
+    let csv = "\uFEFF"; // UTF-8 BOM para o Excel abrir com acentuação correta
+    csv += "Pedido;Data;Canal;Cliente;ValorBruto(R$);Custo(R$);Margem(R$);Caixa10%(R$);JoseReis(R$);LeonardoMonti(R$)\n";
+
+    data.orders.forEach(o => {
+      const sp = o.profitSplit;
+      const dateStr = new Date(o.createdAt).toLocaleDateString('pt-BR');
+      csv += `"${o.id}";"${dateStr}";"${o.channel}";"${o.clientName}";"${Number(o.total).toFixed(2).replace('.', ',')}";"${Number(sp.cost).toFixed(2).replace('.', ',')}";"${Number(sp.margin).toFixed(2).replace('.', ',')}";"${Number(sp.caixaEmpresa).toFixed(2).replace('.', ',')}";"${Number(sp.totalJose).toFixed(2).replace('.', ',')}";"${Number(sp.totalLeonardo).toFixed(2).replace('.', ',')}"\n`;
+    });
+
+    csv += `\n"TOTAIS ACUMULADOS";"";"";"";"";"";"${data.totalMargem.toFixed(2).replace('.', ',')}";"${data.totalCaixa.toFixed(2).replace('.', ',')}";"${data.totalJose.toFixed(2).replace('.', ',')}";"${data.totalLeonardo.toFixed(2).replace('.', ',')}"\n`;
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `acerto-socios-jose-leonardo-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ================= MÓDULO FINANCEIRO GERAL =================
   setPeriodFilter(period, btnEl) {
-    this.periodFilter = period;
+    this.financePeriod = period;
     document.querySelectorAll('.period-btn').forEach(b => {
       b.className = "period-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900";
     });
@@ -173,7 +500,7 @@ class GraphicShopAdmin {
   }
 
   updateKPIs() {
-    const metrics = window.storage.getFinancialMetrics(this.periodFilter);
+    const metrics = window.storage.getFinancialMetrics(this.financePeriod);
 
     const revEl = document.getElementById('kpiRevenue');
     if (revEl) revEl.textContent = metrics.totalRevenue.toFixed(2).replace('.', ',');
@@ -201,9 +528,8 @@ class GraphicShopAdmin {
   }
 
   renderCharts() {
-    const metrics = window.storage.getFinancialMetrics(this.periodFilter);
+    const metrics = window.storage.getFinancialMetrics(this.financePeriod);
 
-    // 1. Gráfico Entradas vs Saídas
     const cashFlowCtx = document.getElementById('chartCashFlow');
     if (cashFlowCtx) {
       if (this.cashFlowChart) this.cashFlowChart.destroy();
@@ -215,9 +541,9 @@ class GraphicShopAdmin {
           datasets: [{
             data: [metrics.totalRevenue, metrics.totalExpense, Math.max(0, metrics.netProfit)],
             backgroundColor: [
-              'rgba(16, 185, 129, 0.85)', // Verde
-              'rgba(239, 68, 68, 0.85)',   // Vermelho
-              'rgba(2, 132, 199, 0.85)'    // Ciano Azul
+              'rgba(16, 185, 129, 0.85)',
+              'rgba(239, 68, 68, 0.85)',
+              'rgba(2, 132, 199, 0.85)'
             ],
             borderRadius: 8,
             borderSkipped: false
@@ -227,26 +553,18 @@ class GraphicShopAdmin {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => `R$ ${Number(ctx.raw).toFixed(2).replace('.', ',')}`
-              }
-            }
+            legend: { display: false }
           },
           scales: {
             y: {
               beginAtZero: true,
-              ticks: {
-                callback: (val) => `R$ ${val}`
-              }
+              ticks: { callback: (val) => `R$ ${val}` }
             }
           }
         }
       });
     }
 
-    // 2. Gráfico Categorias
     const catCtx = document.getElementById('chartCategories');
     if (catCtx) {
       if (this.categoriesChart) this.categoriesChart.destroy();
@@ -287,7 +605,7 @@ class GraphicShopAdmin {
     if (!tableBody) return;
 
     const filterType = filterSelect ? filterSelect.value : 'all';
-    const metrics = window.storage.getFinancialMetrics(this.periodFilter);
+    const metrics = window.storage.getFinancialMetrics(this.financePeriod);
     let list = metrics.transactions;
 
     if (filterType !== 'all') {
@@ -298,7 +616,7 @@ class GraphicShopAdmin {
       tableBody.innerHTML = `
         <tr>
           <td colspan="7" class="text-center py-8 text-slate-400 text-xs font-semibold">
-            Nenhuma movimentação financeira encontrada para os filtros selecionados.
+            Nenhuma movimentação financeira encontrada.
           </td>
         </tr>
       `;
@@ -354,7 +672,7 @@ class GraphicShopAdmin {
       return;
     }
 
-    let csvContent = "\uFEFF"; // UTF-8 BOM para o Excel abrir sem quebrar acentuação
+    let csvContent = "\uFEFF";
     csvContent += "ID;Data;Tipo;Categoria;Descricao;FormaPagamento;Valor(R$);PedidoVinculado\n";
 
     finances.forEach(tx => {
@@ -370,71 +688,6 @@ class GraphicShopAdmin {
     a.download = `fluxo-caixa-grafica-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-  }
-
-  // ================= LANÇAMENTOS RÁPIDOS NO NOTEBOOK =================
-  openQuickSaleModal() {
-    const modal = document.getElementById('quickSaleModal');
-    if (modal) modal.classList.add('active');
-  }
-
-  submitQuickSale() {
-    const client = document.getElementById('saleClientName')?.value.trim();
-    const desc = document.getElementById('saleDescription')?.value.trim();
-    const amount = Number(document.getElementById('saleAmount')?.value);
-    const cost = Number(document.getElementById('saleCost')?.value) || 0;
-    const payment = document.getElementById('salePaymentMethod')?.value || 'Pix';
-    const status = document.getElementById('salePaymentStatus')?.value || 'pago';
-
-    if (!client || !desc || isNaN(amount) || amount <= 0) {
-      alert('Por favor, informe o Cliente, a Descrição e o Valor Cobrado.');
-      return;
-    }
-
-    // 1. Cria o Pedido Interno
-    const newOrder = window.storage.createOrder({
-      clientName: client,
-      clientPhone: "",
-      deliveryType: "balcao",
-      address: "",
-      notes: "Venda registrada diretamente no balcão da gráfica.",
-      artStatus: "ready",
-      status: "producao",
-      paymentStatus: status,
-      paymentMethod: payment,
-      items: [
-        {
-          productName: desc,
-          quantityLabel: "1 lote",
-          paper: "Conforme combinado",
-          finish: "Padrão",
-          total: amount
-        }
-      ],
-      total: amount
-    });
-
-    // 2. Se houver custo de produção estimado, lança a saída
-    if (cost > 0) {
-      window.storage.addFinance({
-        type: "despesa",
-        category: "Insumos & Papel",
-        description: `Custo prod. ${newOrder.id} (${client})`,
-        amount: cost,
-        paymentMethod: payment,
-        orderId: newOrder.id
-      });
-    }
-
-    // Limpa campos
-    document.getElementById('saleClientName').value = '';
-    document.getElementById('saleDescription').value = '';
-    document.getElementById('saleAmount').value = '';
-    document.getElementById('saleCost').value = '';
-
-    this.closeModal('quickSaleModal');
-    this.refreshCurrentView();
-    alert(`Venda lançada com sucesso! Pedido ${newOrder.id} gerado.`);
   }
 
   openQuickExpenseModal() {
@@ -466,7 +719,7 @@ class GraphicShopAdmin {
 
     this.closeModal('quickExpenseModal');
     this.refreshCurrentView();
-    alert('Despesa registrada no fluxo de caixa!');
+    alert('Despesa registrada no caixa da empresa!');
   }
 
   closeModal(modalId) {
@@ -499,7 +752,6 @@ class GraphicShopAdmin {
     let orders = window.storage.getOrders();
     if (countAll) countAll.textContent = orders.length;
 
-    // Filtros
     if (this.orderStatusFilter !== 'all') {
       orders = orders.filter(o => o.status === this.orderStatusFilter);
     }
@@ -532,14 +784,11 @@ class GraphicShopAdmin {
 
     container.innerHTML = orders.map(order => {
       const st = statusLabels[order.status] || { label: order.status, class: "status-novo" };
-      const formattedDate = new Date(order.createdAt).toLocaleDateString('pt-BR', {
-        day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
-      });
+      const sp = order.profitSplit || window.storage.calculateProfitSplit(order.total, order.cost);
 
       return `
         <div class="admin-card p-4 sm:p-5 flex flex-col justify-between border-t-4 ${order.status === 'pronto' ? 'border-t-emerald-500' : order.status === 'producao' ? 'border-t-sky-500' : 'border-t-slate-400'}">
           <div>
-            <!-- Header do Card -->
             <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-3 mb-3">
               <div>
                 <span class="font-mono text-xs font-black text-sky-600 block">${order.id}</span>
@@ -551,16 +800,21 @@ class GraphicShopAdmin {
               </span>
             </div>
 
-            <!-- Resumo dos Itens -->
-            <div class="space-y-1.5 mb-4 text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-              ${order.items.map(item => `
+            <!-- Resumo dos Itens e Repartição dos Sócios -->
+            <div class="space-y-1.5 mb-3 text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              ${(order.items || []).map(item => `
                 <div class="border-b border-slate-200/60 pb-1 last:border-0 last:pb-0">
                   <p class="font-bold text-slate-800">${item.quantityLabel || ''} ${item.productName}</p>
                   <p class="text-[11px] text-slate-500">${item.paper || ''} • ${item.finish || ''}</p>
                 </div>
               `).join('')}
-              ${order.notes ? `<p class="text-[11px] text-amber-700 bg-amber-50 p-1.5 rounded font-medium mt-1">Obs: ${order.notes}</p>` : ''}
-              ${order.artLink ? `<p class="text-[11px] text-sky-600 font-bold truncate">Arte: <a href="${order.artLink}" target="_blank" class="underline">Ver Arquivo</a></p>` : ''}
+
+              <!-- Divisão Rápida deste Pedido -->
+              <div class="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] font-bold">
+                <span class="text-emerald-700">José: R$ ${Number(sp.totalJose).toFixed(2).replace('.', ',')}</span>
+                <span class="text-sky-700">Leonardo: R$ ${Number(sp.totalLeonardo).toFixed(2).replace('.', ',')}</span>
+                <span class="text-slate-500">Caixa: R$ ${Number(sp.caixaEmpresa).toFixed(2).replace('.', ',')}</span>
+              </div>
             </div>
           </div>
 

@@ -1,17 +1,19 @@
 /**
  * STORAGE.JS - Gestor de Estado Central & Banco de Dados Local da Gráfica
  * Sincroniza em tempo real entre o Catálogo Mobile do Cliente e o Painel Admin do Notebook.
+ * Inclui o Motor de Repartição de Lucros Operacional entre os Sócios:
+ * José Reis e Leonardo Monti.
  */
 
 const STORAGE_KEYS = {
-  CONFIG: 'grafica_config_v1',
-  PRODUCTS: 'grafica_products_v1',
-  ORDERS: 'grafica_orders_v1',
-  FINANCES: 'grafica_finances_v1',
-  CART: 'grafica_cart_v1'
+  CONFIG: 'grafica_config_v2', // v2 para carregar a nova estrutura de sócios
+  PRODUCTS: 'grafica_products_v2',
+  ORDERS: 'grafica_orders_v2',
+  FINANCES: 'grafica_finances_v2',
+  CART: 'grafica_cart_v2'
 };
 
-// Configuração Padrão da Gráfica
+// Configuração Padrão da Gráfica com Sócios
 const DEFAULT_CONFIG = {
   storeName: "PrintPro Gráfica & Comunicação Visual",
   shortName: "PrintPro",
@@ -25,7 +27,19 @@ const DEFAULT_CONFIG = {
   operatingHours: "Seg a Sex: 08:30 às 18:30 | Sáb: 08:30 às 12:30",
   standardArtFee: 35.00, // Custo para criação de arte profissional
   standardTurnaround: "2 a 4 dias úteis",
-  adminPin: "1234" // PIN padrão para acessar a área administrativa
+  adminPin: "1234", // PIN padrão para acessar a área administrativa
+  partners: [
+    { id: "jose", name: "José Reis", role: "Sócio • Atendimento & Arte" },
+    { id: "leonardo", name: "Leonardo Monti", role: "Sócio • Produção & Acabamento" }
+  ],
+  splitRules: {
+    caixa: 10,       // 10% Caixa da Empresa
+    captacao: 15,    // 15% Captação (se orgânico -> vai p/ Lucros)
+    atendimento: 15, // 15% Atendimento e Fechamento
+    arte: 15,        // 15% Criação da Arte (se pronta -> vai p/ Lucros)
+    producao: 25,    // 25% Produção e Impressão
+    lucros: 20       // 20% Base de Divisão de Lucros (50/50)
+  }
 };
 
 // Catálogo Inicial de Produtos com Simulador de Preços Realista
@@ -310,21 +324,28 @@ const DEFAULT_PRODUCTS = [
   }
 ];
 
-// Pedidos Demonstrativos Realistas para Teste Imediato
+// Pedidos Iniciais com Repartição de Lucros Demonstrativa
 const DEFAULT_ORDERS = [
   {
     id: "PED-1082",
     createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
     clientName: "Carlos Eduardo Silva",
     clientPhone: "35998812233",
+    channel: "whatsapp", // whatsapp, balcao, site, trafego_pago
+    isOrganic: true,
     deliveryType: "balcao",
     address: "",
-    notes: "Preciso retirar até sexta-feira sem falta.",
-    artStatus: "ready", // ready, need_design
+    notes: "Pedido fechado direto pelo WhatsApp.",
+    artStatus: "ready", // Trouxe arte pronta -> +15% vai p/ divisão de lucros!
     artLink: "https://drive.google.com/file/d/exemplo-arte-carlos",
-    status: "producao", // novo, arte, producao, pronto, entregue, cancelado
-    paymentStatus: "pago", // pendente, parcial, pago
+    status: "producao",
+    paymentStatus: "pago",
     paymentMethod: "Pix",
+    attendanceAssignee: "jose",     // José atendeu
+    artAssignee: null,              // Arte veio pronta
+    productionAssignee: "leonardo", // Leonardo na produção
+    cost: 50.00,
+    total: 174.50,
     items: [
       {
         productId: "cartao-visita",
@@ -334,27 +355,30 @@ const DEFAULT_ORDERS = [
         size: "Padrão (9x5 cm)",
         paper: "Couché 300g (Encorpado / Padrão)",
         finish: "Laminação Fosca + Verniz Localizado Frente e Verso (Luxo)",
-        extras: ["4 Cantos Arredondados"],
-        artFee: 0,
         unitPrice: 174.50,
         subtotal: 174.50
       }
-    ],
-    total: 174.50
+    ]
   },
   {
     id: "PED-1081",
     createdAt: new Date(Date.now() - 3600000 * 26).toISOString(),
     clientName: "Pizzaria Forno Nobre (Marcos)",
     clientPhone: "35991224455",
+    channel: "trafego_pago", // Veio de anúncio Instagram -> 15% reserva de ads
+    isOrganic: false,
     deliveryType: "entrega",
     address: "Av. Brasil, 450 - Jd. América",
-    notes: "Cardápio novo de promoções. Favor colocar telefone em destaque.",
-    artStatus: "need_design",
-    artLink: "",
+    notes: "Cardápio novo de promoções.",
+    artStatus: "need_design", // José criou a arte
     status: "arte",
-    paymentStatus: "parcial", // Pagou sinal de 50%
+    paymentStatus: "parcial",
     paymentMethod: "Pix",
+    attendanceAssignee: "jose",     // José atendeu
+    artAssignee: "jose",            // José criou a arte (+15%)
+    productionAssignee: "leonardo", // Leonardo irá produzir (+25%)
+    cost: 110.00,
+    total: 365.75,
     items: [
       {
         productId: "panfleto-flyer",
@@ -364,27 +388,31 @@ const DEFAULT_ORDERS = [
         size: "10x14 cm (1/4 A4)",
         paper: "Couché 90g (Econômico)",
         finish: "Impressão Frente e Verso Colorido (4x4)",
-        extras: [],
         artFee: 35.00,
         unitPrice: 330.75,
         subtotal: 365.75
       }
-    ],
-    total: 365.75
+    ]
   },
   {
     id: "PED-1080",
     createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
     clientName: "Dra. Renata Vasconcelos",
     clientPhone: "35997331122",
+    channel: "whatsapp",
+    isOrganic: true,
     deliveryType: "balcao",
     address: "",
     notes: "Receituário médico com CRM legível.",
     artStatus: "ready",
-    artLink: "Enviado no WhatsApp",
-    status: "pronto", // Pronto para retirada
+    status: "pronto",
     paymentStatus: "pago",
     paymentMethod: "Cartão de Crédito",
+    attendanceAssignee: "jose",
+    artAssignee: null,
+    productionAssignee: "leonardo",
+    cost: 40.00,
+    total: 150.00,
     items: [
       {
         productId: "talão-recibo",
@@ -394,27 +422,30 @@ const DEFAULT_ORDERS = [
         size: "14x20 cm (1/2 Folha A4)",
         paper: "Sulfite Branco 75g",
         finish: "Grampo + Picote Destacável + Numeração",
-        extras: [],
-        artFee: 0,
         unitPrice: 150.00,
         subtotal: 150.00
       }
-    ],
-    total: 150.00
+    ]
   },
   {
     id: "PED-1079",
     createdAt: new Date(Date.now() - 3600000 * 72).toISOString(),
     clientName: "Academia Iron Fit (Luciano)",
     clientPhone: "35988449988",
+    channel: "balcao",
+    isOrganic: true,
     deliveryType: "entrega",
     address: "Rua Tiradentes, 88 - Centro",
-    notes: "Banner para fachada com reforço nas bordas.",
+    notes: "Banner para fachada com reforço.",
     artStatus: "ready",
-    artLink: "",
     status: "entregue",
     paymentStatus: "pago",
     paymentMethod: "Pix",
+    attendanceAssignee: "leonardo", // Leonardo atendeu no balcão
+    artAssignee: null,
+    productionAssignee: "leonardo", // Leonardo produziu
+    cost: 45.00,
+    total: 141.75,
     items: [
       {
         productId: "banner-lona",
@@ -424,23 +455,20 @@ const DEFAULT_ORDERS = [
         size: "100 x 150 cm",
         paper: "Lona 440g Fosca",
         finish: "Ilhós Metálico em Toda Volta",
-        extras: [],
-        artFee: 0,
         unitPrice: 141.75,
         subtotal: 141.75
       }
-    ],
-    total: 141.75
+    ]
   }
 ];
 
-// Movimentações Financeiras Iniciais para o Módulo de Fluxo de Caixa
+// Movimentações Financeiras Iniciais
 const DEFAULT_FINANCES = [
   {
     id: "FIN-1001",
     date: new Date(Date.now() - 3600000 * 2).toISOString(),
     type: "receita",
-    category: "Venda Catálogo",
+    category: "Venda WhatsApp",
     description: "PED-1082: 1.000 Cartões de Visita (Carlos Eduardo)",
     amount: 174.50,
     paymentMethod: "Pix",
@@ -450,7 +478,7 @@ const DEFAULT_FINANCES = [
     id: "FIN-1002",
     date: new Date(Date.now() - 3600000 * 26).toISOString(),
     type: "receita",
-    category: "Venda Catálogo",
+    category: "Venda Anúncios",
     description: "PED-1081: Sinal 50% Panfletos (Pizzaria Forno Nobre)",
     amount: 182.87,
     paymentMethod: "Pix",
@@ -469,7 +497,7 @@ const DEFAULT_FINANCES = [
     id: "FIN-1004",
     date: new Date(Date.now() - 3600000 * 48).toISOString(),
     type: "receita",
-    category: "Venda Catálogo",
+    category: "Venda WhatsApp",
     description: "PED-1080: 10 Blocos Receituário (Dra. Renata)",
     amount: 150.00,
     paymentMethod: "Cartão",
@@ -497,7 +525,7 @@ const DEFAULT_FINANCES = [
     id: "FIN-1007",
     date: new Date(Date.now() - 3600000 * 72).toISOString(),
     type: "receita",
-    category: "Venda Catálogo",
+    category: "Venda Balcão",
     description: "PED-1079: Banner 100x150cm (Academia Iron Fit)",
     amount: 141.75,
     paymentMethod: "Pix",
@@ -536,7 +564,19 @@ class StorageManager {
       this.saveProducts(DEFAULT_PRODUCTS);
     }
     if (!localStorage.getItem(STORAGE_KEYS.ORDERS)) {
-      this.saveOrders(DEFAULT_ORDERS);
+      // Pré-calcula a repartição dos pedidos iniciais
+      const initialOrders = DEFAULT_ORDERS.map(order => {
+        const split = this.calculateProfitSplit(order.total, order.cost, {
+          channel: order.channel,
+          isOrganic: order.isOrganic,
+          artStatus: order.artStatus,
+          attendanceAssignee: order.attendanceAssignee,
+          artAssignee: order.artAssignee,
+          productionAssignee: order.productionAssignee
+        });
+        return { ...order, profitSplit: split };
+      });
+      this.saveOrders(initialOrders);
     }
     if (!localStorage.getItem(STORAGE_KEYS.FINANCES)) {
       this.saveFinances(DEFAULT_FINANCES);
@@ -546,7 +586,207 @@ class StorageManager {
     }
   }
 
-  // CONFIGURAÇÃO
+  // ================= MOTOR DE REPARTIÇÃO DE LUCROS =================
+  calculateProfitSplit(saleAmount, costAmount = 0, options = {}) {
+    const sale = Number(saleAmount) || 0;
+    const cost = Number(costAmount) || 0;
+    const margin = Math.max(0, sale - cost);
+
+    // Opções
+    const channel = options.channel || 'whatsapp';
+    const isOrganic = options.isOrganic !== undefined ? options.isOrganic : (channel !== 'trafego_pago');
+    const artStatus = options.artStatus || 'ready'; // ready ou need_design
+    
+    // Responsáveis (jose, leonardo, both)
+    const attendanceAssignee = options.attendanceAssignee || 'jose';
+    const artAssignee = options.artAssignee || (artStatus === 'need_design' ? 'jose' : null);
+    const productionAssignee = options.productionAssignee || 'leonardo';
+
+    // 1. 10% Caixa da Empresa
+    const caixaEmpresa = Number((0.10 * margin).toFixed(2));
+
+    // 2. 15% Captação (se orgânico, vai p/ lucros)
+    const captacaoValor = isOrganic ? 0 : Number((0.15 * margin).toFixed(2));
+
+    // 3. 15% Atendimento e Fechamento
+    const atendimentoValor = Number((0.15 * margin).toFixed(2));
+
+    // 4. 15% Criação da Arte (se pronta, vai p/ lucros)
+    const arteValor = (artStatus === 'ready') ? 0 : Number((0.15 * margin).toFixed(2));
+
+    // 5. 25% Produção e Acabamento
+    const producaoValor = Number((0.25 * margin).toFixed(2));
+
+    // 6. 20% Base de Divisão de Lucros + Sobras de Captação e Arte
+    const sobraCaptacao = isOrganic ? (0.15 * margin) : 0;
+    const sobraArte = (artStatus === 'ready') ? (0.15 * margin) : 0;
+    const lucroPoolTotal = Number(((0.20 * margin) + sobraCaptacao + sobraArte).toFixed(2));
+
+    // Divisão 50/50 do Lucro
+    const lucroJose = Number((lucroPoolTotal / 2).toFixed(2));
+    const lucroLeonardo = Number((lucroPoolTotal / 2).toFixed(2));
+
+    // Atribuição de Atendimento (15%)
+    let atendimentoJose = 0;
+    let atendimentoLeonardo = 0;
+    if (attendanceAssignee === 'jose') {
+      atendimentoJose = atendimentoValor;
+    } else if (attendanceAssignee === 'leonardo') {
+      atendimentoLeonardo = atendimentoValor;
+    } else {
+      atendimentoJose = Number((atendimentoValor / 2).toFixed(2));
+      atendimentoLeonardo = Number((atendimentoValor / 2).toFixed(2));
+    }
+
+    // Atribuição de Arte (15% ou 0)
+    let arteJose = 0;
+    let arteLeonardo = 0;
+    if (arteValor > 0) {
+      if (artAssignee === 'jose') {
+        arteJose = arteValor;
+      } else if (artAssignee === 'leonardo') {
+        arteLeonardo = arteValor;
+      } else {
+        arteJose = Number((arteValor / 2).toFixed(2));
+        arteLeonardo = Number((arteValor / 2).toFixed(2));
+      }
+    }
+
+    // Atribuição de Produção (25%)
+    let producaoJose = 0;
+    let producaoLeonardo = 0;
+    if (productionAssignee === 'jose') {
+      producaoJose = producaoValor;
+    } else if (productionAssignee === 'leonardo') {
+      producaoLeonardo = producaoValor;
+    } else {
+      producaoJose = Number((producaoValor / 2).toFixed(2));
+      producaoLeonardo = Number((producaoValor / 2).toFixed(2));
+    }
+
+    // Totais Consolidados de Cada Sócio
+    const totalJose = Number((lucroJose + atendimentoJose + arteJose + producaoJose).toFixed(2));
+    const totalLeonardo = Number((lucroLeonardo + atendimentoLeonardo + arteLeonardo + producaoLeonardo).toFixed(2));
+
+    return {
+      sale,
+      cost,
+      margin,
+      channel,
+      isOrganic,
+      artStatus,
+      attendanceAssignee,
+      artAssignee,
+      productionAssignee,
+      caixaEmpresa,
+      captacaoValor,
+      atendimentoValor,
+      arteValor,
+      producaoValor,
+      lucroPoolTotal,
+      lucroJose,
+      lucroLeonardo,
+      atendimentoJose,
+      atendimentoLeonardo,
+      arteJose,
+      arteLeonardo,
+      producaoJose,
+      producaoLeonardo,
+      totalJose,
+      totalLeonardo
+    };
+  }
+
+  // MÉTRICAS CONSOLIDADAS DOS SÓCIOS
+  getPartnersMetrics(periodFilter = 'all') {
+    const orders = this.getOrders();
+    const now = new Date();
+
+    const filtered = orders.filter(o => {
+      if (periodFilter === 'all') return true;
+      const oDate = new Date(o.createdAt);
+      if (periodFilter === 'today') {
+        return oDate.toDateString() === now.toDateString();
+      }
+      if (periodFilter === '7days') {
+        const diff = (now - oDate) / (1000 * 60 * 60 * 24);
+        return diff <= 7;
+      }
+      if (periodFilter === 'month') {
+        return oDate.getMonth() === now.getMonth() && oDate.getFullYear() === now.getFullYear();
+      }
+      return true;
+    });
+
+    let totalJose = 0;
+    let totalLeonardo = 0;
+    let totalCaixa = 0;
+    let totalCaptacao = 0;
+    let totalMargem = 0;
+
+    const breakdownJose = {
+      lucro: 0,
+      atendimento: 0,
+      arte: 0,
+      producao: 0
+    };
+
+    const breakdownLeonardo = {
+      lucro: 0,
+      atendimento: 0,
+      arte: 0,
+      producao: 0
+    };
+
+    const ordersWithSplit = filtered.map(order => {
+      let split = order.profitSplit;
+      if (!split) {
+        const cost = Number(order.cost) || (Number(order.total) * 0.30);
+        split = this.calculateProfitSplit(order.total, cost, {
+          channel: order.channel || 'whatsapp',
+          isOrganic: order.isOrganic !== undefined ? order.isOrganic : true,
+          artStatus: order.artStatus || 'ready',
+          attendanceAssignee: order.attendanceAssignee || 'jose',
+          artAssignee: order.artAssignee || (order.artStatus === 'need_design' ? 'jose' : null),
+          productionAssignee: order.productionAssignee || 'leonardo'
+        });
+      }
+
+      totalJose += split.totalJose;
+      totalLeonardo += split.totalLeonardo;
+      totalCaixa += split.caixaEmpresa;
+      totalCaptacao += split.captacaoValor;
+      totalMargem += split.margin;
+
+      breakdownJose.lucro += split.lucroJose;
+      breakdownJose.atendimento += split.atendimentoJose;
+      breakdownJose.arte += split.arteJose;
+      breakdownJose.producao += split.producaoJose;
+
+      breakdownLeonardo.lucro += split.lucroLeonardo;
+      breakdownLeonardo.atendimento += split.atendimentoLeonardo;
+      breakdownLeonardo.arte += split.arteLeonardo;
+      breakdownLeonardo.producao += split.producaoLeonardo;
+
+      return {
+        ...order,
+        profitSplit: split
+      };
+    });
+
+    return {
+      totalJose: Number(totalJose.toFixed(2)),
+      totalLeonardo: Number(totalLeonardo.toFixed(2)),
+      totalCaixa: Number(totalCaixa.toFixed(2)),
+      totalCaptacao: Number(totalCaptacao.toFixed(2)),
+      totalMargem: Number(totalMargem.toFixed(2)),
+      breakdownJose,
+      breakdownLeonardo,
+      orders: ordersWithSplit
+    };
+  }
+
+  // ================= CONFIGURAÇÃO =================
   getConfig() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.CONFIG);
@@ -561,7 +801,7 @@ class StorageManager {
     this.dispatchChangeEvent('config', config);
   }
 
-  // PRODUTOS
+  // ================= PRODUTOS =================
   getProducts() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
@@ -600,7 +840,7 @@ class StorageManager {
     this.saveProducts(products);
   }
 
-  // PEDIDOS
+  // ================= PEDIDOS =================
   getOrders() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.ORDERS);
@@ -623,22 +863,59 @@ class StorageManager {
   createOrder(orderData) {
     const orders = this.getOrders();
     const nextNum = 1083 + orders.length;
+
+    const total = Number(orderData.total) || 0;
+    const cost = Number(orderData.cost) !== undefined && !isNaN(Number(orderData.cost)) 
+      ? Number(orderData.cost) 
+      : Number((total * 0.30).toFixed(2)); // Custo padrão 30% caso não informado
+
+    const channel = orderData.channel || 'whatsapp';
+    const isOrganic = orderData.isOrganic !== undefined ? orderData.isOrganic : (channel !== 'trafego_pago');
+    const artStatus = orderData.artStatus || 'ready';
+    const attendanceAssignee = orderData.attendanceAssignee || 'jose';
+    const artAssignee = orderData.artAssignee || (artStatus === 'need_design' ? 'jose' : null);
+    const productionAssignee = orderData.productionAssignee || 'leonardo';
+
+    // Calcula Repartição de Lucros no Ato da Criação
+    const profitSplit = this.calculateProfitSplit(total, cost, {
+      channel,
+      isOrganic,
+      artStatus,
+      attendanceAssignee,
+      artAssignee,
+      productionAssignee
+    });
+
     const newOrder = {
       id: `PED-${nextNum}`,
       createdAt: new Date().toISOString(),
       status: "novo",
       paymentStatus: "pendente",
-      ...orderData
+      ...orderData,
+      total,
+      cost,
+      channel,
+      isOrganic,
+      artStatus,
+      attendanceAssignee,
+      artAssignee,
+      productionAssignee,
+      profitSplit
     };
+
     orders.unshift(newOrder);
     this.saveOrders(orders);
 
     // Registra automaticamente como receita futura/prevista
     if (newOrder.total > 0) {
+      const catName = channel === 'whatsapp' ? 'Venda WhatsApp' :
+                      channel === 'balcao' ? 'Venda Balcão' :
+                      channel === 'site' ? 'Venda Catálogo Site' : 'Venda Anúncios';
+
       this.addFinance({
         type: "receita",
-        category: "Venda Catálogo",
-        description: `${newOrder.id}: ${newOrder.clientName} (${newOrder.items[0]?.productName || 'Itens diversos'})`,
+        category: catName,
+        description: `${newOrder.id}: ${newOrder.clientName} (${newOrder.items?.[0]?.productName || 'Material Gráfico'})`,
         amount: Number(newOrder.total),
         paymentMethod: newOrder.paymentMethod || "Pix",
         orderId: newOrder.id
@@ -669,7 +946,33 @@ class StorageManager {
     return order;
   }
 
-  // CARRINHO (Mobile Storefront)
+  updateOrderSplit(orderId, splitData) {
+    const orders = this.getOrders();
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+      order.cost = Number(splitData.cost) || order.cost || 0;
+      order.channel = splitData.channel || order.channel;
+      order.isOrganic = splitData.isOrganic !== undefined ? splitData.isOrganic : order.isOrganic;
+      order.artStatus = splitData.artStatus || order.artStatus;
+      order.attendanceAssignee = splitData.attendanceAssignee || order.attendanceAssignee;
+      order.artAssignee = splitData.artAssignee || order.artAssignee;
+      order.productionAssignee = splitData.productionAssignee || order.productionAssignee;
+
+      order.profitSplit = this.calculateProfitSplit(order.total, order.cost, {
+        channel: order.channel,
+        isOrganic: order.isOrganic,
+        artStatus: order.artStatus,
+        attendanceAssignee: order.attendanceAssignee,
+        artAssignee: order.artAssignee,
+        productionAssignee: order.productionAssignee
+      });
+
+      this.saveOrders(orders);
+    }
+    return order;
+  }
+
+  // ================= CARRINHO (Mobile Storefront) =================
   getCart() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.CART);
@@ -703,7 +1006,7 @@ class StorageManager {
     this.saveCart([]);
   }
 
-  // FLUXO DE CAIXA & FINANÇAS
+  // ================= FLUXO DE CAIXA & FINANÇAS =================
   getFinances() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.FINANCES);
@@ -723,7 +1026,7 @@ class StorageManager {
     const newTx = {
       id: `FIN-${Date.now().toString().slice(-5)}`,
       date: tx.date || new Date().toISOString(),
-      type: tx.type || "receita", // receita ou despesa
+      type: tx.type || "receita",
       category: tx.category || "Outros",
       description: tx.description || "Lançamento",
       amount: Math.abs(Number(tx.amount) || 0),
@@ -741,7 +1044,6 @@ class StorageManager {
     this.saveFinances(finances);
   }
 
-  // MÉTRICAS FINANCEIRAS AUTOMATIZADAS
   getFinancialMetrics(periodFilter = 'all') {
     const finances = this.getFinances();
     const now = new Date();
@@ -779,7 +1081,6 @@ class StorageManager {
     const netProfit = totalRevenue - totalExpense;
     const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
     
-    // Contagem de pedidos
     const orders = this.getOrders();
     const completedOrders = orders.filter(o => o.status === 'entregue' || o.paymentStatus === 'pago');
     const averageTicket = completedOrders.length > 0 ? (totalRevenue / completedOrders.length).toFixed(2) : 0;
@@ -797,7 +1098,7 @@ class StorageManager {
     };
   }
 
-  // BACKUP & RESTAURAÇÃO
+  // ================= BACKUP & RESTAURAÇÃO =================
   exportAllData() {
     return JSON.stringify({
       config: this.getConfig(),
@@ -805,7 +1106,7 @@ class StorageManager {
       orders: this.getOrders(),
       finances: this.getFinances(),
       exportedAt: new Date().toISOString(),
-      version: "1.0"
+      version: "2.0"
     }, null, 2);
   }
 
@@ -822,7 +1123,6 @@ class StorageManager {
     }
   }
 
-  // Sincronização entre abas
   dispatchChangeEvent(type, data) {
     window.dispatchEvent(new CustomEvent('grafica-data-change', { detail: { type, data } }));
   }

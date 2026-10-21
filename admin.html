@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
-  <title>Painel de Gestão & Finanças • Gráfica Digital</title>
-  <meta name="description" content="Painel de controle de pedidos, fluxo de caixa e gestão financeira da gráfica.">
+  <title>Painel de Gestão & Repartição de Lucros • PrintPro</title>
+  <meta name="description" content="Painel de controle de pedidos, fluxo de caixa e repartição de lucros entre sócios.">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,19 +39,11 @@
   <!-- Estilos Customizados & Responsivos -->
   <link rel="stylesheet" href="css/styles.css">
   <style>
-    /* Estilos específicos do painel de controle */
     .admin-card {
       background: white;
       border-radius: 16px;
       border: 1px solid #e2e8f0;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-    .kanban-col {
-      min-width: 290px;
-      background: #f8fafc;
-      border-radius: 16px;
-      padding: 12px;
-      border: 1px solid #e2e8f0;
     }
   </style>
 </head>
@@ -63,8 +55,8 @@
       <div class="w-14 h-14 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center mx-auto mb-4">
         <i data-lucide="shield-check" class="w-7 h-7"></i>
       </div>
-      <h2 class="text-xl font-black text-slate-900 mb-1">Painel do Lojista</h2>
-      <p class="text-xs text-slate-500 mb-6">Digite seu PIN de 4 dígitos para gerenciar vendas, pedidos e custos.</p>
+      <h2 class="text-xl font-black text-slate-900 mb-1">Painel dos Sócios</h2>
+      <p class="text-xs text-slate-500 mb-6">José Reis & Leonardo Monti • Gestão, Produção e Repartição de Lucros</p>
 
       <div class="mb-4">
         <input 
@@ -102,7 +94,7 @@
             </div>
             <div>
               <h1 id="adminStoreTitle" class="font-black text-sm tracking-tight leading-tight">PrintPro Admin</h1>
-              <span class="text-[10px] text-sky-400 font-semibold uppercase tracking-wider">Gestão & Finanças</span>
+              <span class="text-[10px] text-sky-400 font-semibold uppercase tracking-wider">José & Leonardo</span>
             </div>
           </div>
           <!-- Link rápido para loja -->
@@ -113,15 +105,21 @@
 
         <!-- Menu de Navegação do Notebook -->
         <nav class="p-3 space-y-1 text-sm font-semibold">
-          <button onclick="admin.switchTab('finances')" id="tabBtnFinances" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-sky-600 text-white transition">
-            <i data-lucide="dollar-sign" class="w-5 h-5"></i>
-            <span>Finanças & Caixa</span>
+          <!-- Nova Aba Principal de Repartição de Lucros -->
+          <button onclick="admin.switchTab('split')" id="tabBtnSplit" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-emerald-600 text-white font-bold transition shadow-sm">
+            <i data-lucide="users" class="w-5 h-5"></i>
+            <span>Sócios & Repartição</span>
           </button>
 
           <button onclick="admin.switchTab('orders')" id="tabBtnOrders" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
             <i data-lucide="package" class="w-5 h-5"></i>
             <span>Pedidos & Produção</span>
             <span id="adminPendingOrdersBadge" class="ml-auto text-[10px] font-black bg-amber-500 text-slate-900 px-2 py-0.5 rounded-full">0</span>
+          </button>
+
+          <button onclick="admin.switchTab('finances')" id="tabBtnFinances" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+            <span>Fluxo de Caixa Geral</span>
           </button>
 
           <button onclick="admin.switchTab('products')" id="tabBtnProducts" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
@@ -136,14 +134,25 @@
         </nav>
       </div>
 
-      <!-- Rodapé da Sidebar -->
-      <div class="p-4 border-t border-slate-800">
-        <div class="flex items-center justify-between text-xs text-slate-400">
+      <!-- Rodapé da Sidebar com Identificação dos Sócios -->
+      <div class="p-4 border-t border-slate-800 space-y-2">
+        <div class="text-[11px] text-slate-400 bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/60">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-bold text-slate-200">José Reis</span>
+            <span class="text-[10px] text-emerald-400 font-semibold">Atendimento & Arte</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-200">Leonardo Monti</span>
+            <span class="text-[10px] text-sky-400 font-semibold">Produção & Corte</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
           <span class="flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Conectado
           </span>
           <button onclick="admin.lockPanel()" class="text-slate-400 hover:text-red-400 font-semibold flex items-center gap-1 transition">
-            <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Bloquear
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sair
           </button>
         </div>
       </div>
@@ -152,175 +161,220 @@
     <!-- ================= ÁREA DE CONTEÚDO PRINCIPAL (NOTEBOOK / PC) ================= -->
     <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
 
-      <!-- Topbar do Admin -->
+      <!-- Topbar do Admin com Ações de 1 Toque -->
       <header class="bg-white border-b border-slate-200 px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 sticky top-0 z-30 shadow-sm">
         <div class="flex items-center gap-3">
-          <h2 id="currentTabTitle" class="text-lg font-black text-slate-900">Fluxo de Caixa & Finanças</h2>
+          <h2 id="currentTabTitle" class="text-base sm:text-lg font-black text-slate-900">Repartição de Lucros dos Sócios</h2>
         </div>
 
-        <!-- Ações Rápidas do Topbar (Ideal para registrar vendas no balcão) -->
+        <!-- Botões de Ação do Dia a Dia -->
         <div class="flex items-center gap-2">
-          <!-- Botão Nova Venda Balcão -->
-          <button onclick="admin.openQuickSaleModal()" class="px-3.5 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition flex items-center gap-1.5 shadow-sm shadow-emerald-600/20">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i>
-            <span class="hidden sm:inline">Nova Venda Balcão</span>
-            <span class="sm:hidden">+ Venda</span>
+          <!-- Botão Principal: Novo Pedido (WhatsApp ou Balcão) -->
+          <button onclick="admin.openQuickOrderModal()" class="px-3.5 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition flex items-center gap-1.5 shadow-sm shadow-emerald-600/20">
+            <i data-lucide="message-circle" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">+ Novo Pedido (WhatsApp / Balcão)</span>
+            <span class="sm:hidden">+ Pedido WhatsApp</span>
           </button>
 
           <!-- Botão Novo Custo / Despesa -->
           <button onclick="admin.openQuickExpenseModal()" class="px-3.5 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition flex items-center gap-1.5 shadow-sm">
             <i data-lucide="minus-circle" class="w-4 h-4 text-red-400"></i>
-            <span class="hidden sm:inline">Novo Custo / Despesa</span>
+            <span class="hidden sm:inline">Lançar Custo</span>
             <span class="sm:hidden">+ Custo</span>
           </button>
         </div>
       </header>
 
-      <!-- ================= ABA 1: FINANÇAS & FLUXO DE CAIXA ================= -->
-      <section id="tabFinances" class="p-4 sm:p-6 space-y-6">
+      <!-- ================= ABA 1: SÓCIOS & REPARTIÇÃO DE LUCROS (NOVA & PRINCIPAL) ================= -->
+      <section id="tabSplit" class="p-4 sm:p-6 space-y-6">
 
-        <!-- Barra de Filtro de Período -->
-        <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200">
+        <!-- Barra Superior com Filtro de Período e Explicação da Regra -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
           <div class="flex items-center gap-2">
             <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Período:</span>
             <div class="flex gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
-              <button onclick="admin.setPeriodFilter('all', this)" class="period-btn px-3 py-1.5 rounded-lg active bg-white text-slate-900 shadow-sm">Todos</button>
-              <button onclick="admin.setPeriodFilter('today', this)" class="period-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">Hoje</button>
-              <button onclick="admin.setPeriodFilter('7days', this)" class="period-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">7 Dias</button>
-              <button onclick="admin.setPeriodFilter('month', this)" class="period-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">Este Mês</button>
+              <button onclick="admin.setSplitPeriod('all', this)" class="split-period-btn px-3 py-1.5 rounded-lg active bg-white text-slate-900 shadow-sm">Todos</button>
+              <button onclick="admin.setSplitPeriod('today', this)" class="split-period-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">Hoje</button>
+              <button onclick="admin.setSplitPeriod('7days', this)" class="split-period-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">7 Dias</button>
+              <button onclick="admin.setSplitPeriod('month', this)" class="split-period-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">Este Mês</button>
             </div>
           </div>
 
           <div class="flex items-center gap-2">
-            <button onclick="admin.exportFinancialCSV()" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition flex items-center gap-1.5">
-              <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar CSV (Excel)
+            <button onclick="admin.openSplitRulesModal()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5 text-sky-600"></i> Como funciona a regra?
+            </button>
+            <button onclick="admin.exportPartnersCSV()" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition flex items-center gap-1.5">
+              <i data-lucide="download" class="w-3.5 h-3.5 text-emerald-600"></i> Exportar Acerto (Excel)
             </button>
           </div>
         </div>
 
-        <!-- Cards de Métricas Principais (KPIs) -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <!-- Faturamento Total -->
-          <div class="admin-card p-4 sm:p-5">
-            <div class="flex items-center justify-between text-slate-400 mb-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Faturamento Bruto</span>
-              <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                <i data-lucide="trending-up" class="w-4 h-4"></i>
+        <!-- CARDS CONSOLIDADOS DOS DOIS SÓCIOS + CAIXA -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- CARD JOSÉ REIS -->
+          <div class="admin-card p-5 border-t-4 border-t-emerald-500 bg-gradient-to-b from-emerald-50/40 to-white">
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 block">Sócio 1</span>
+                <h3 class="font-black text-slate-900 text-base">José Reis</h3>
+              </div>
+              <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black text-xs">
+                JR
               </div>
             </div>
-            <div class="flex items-baseline gap-1">
-              <span class="text-xs font-bold text-slate-500">R$</span>
-              <span id="kpiRevenue" class="text-xl sm:text-2xl font-black text-slate-900">0,00</span>
+
+            <div class="mt-3">
+              <span class="text-[11px] text-slate-500 font-semibold block">Total a Receber / Sacar:</span>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span class="text-xs font-bold text-slate-500">R$</span>
+                <span id="splitTotalJose" class="text-2xl font-black text-emerald-700">0,00</span>
+              </div>
             </div>
-            <span class="text-[11px] text-emerald-600 font-semibold mt-1 block">Receitas acumuladas</span>
+
+            <!-- Breakdown de José -->
+            <div class="mt-4 pt-3 border-t border-slate-100 space-y-1 text-xs text-slate-600">
+              <div class="flex justify-between">
+                <span>💬 Atendimentos (15%):</span>
+                <strong id="subJoseAtendimento" class="text-slate-800">R$ 0,00</strong>
+              </div>
+              <div class="flex justify-between">
+                <span>🎨 Criação de Arte (15%):</span>
+                <strong id="subJoseArte" class="text-slate-800">R$ 0,00</strong>
+              </div>
+              <div class="flex justify-between">
+                <span>⚙️ Produção (25%):</span>
+                <strong id="subJoseProducao" class="text-slate-800">R$ 0,00</strong>
+              </div>
+              <div class="flex justify-between text-emerald-800 font-bold pt-1 border-t border-slate-100">
+                <span>💎 Divisão de Lucro (50%):</span>
+                <strong id="subJoseLucro">R$ 0,00</strong>
+              </div>
+            </div>
           </div>
 
-          <!-- Custos & Despesas -->
-          <div class="admin-card p-4 sm:p-5">
-            <div class="flex items-center justify-between text-slate-400 mb-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Custos & Despesas</span>
-              <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
-                <i data-lucide="trending-down" class="w-4 h-4"></i>
+          <!-- CARD LEONARDO MONTI -->
+          <div class="admin-card p-5 border-t-4 border-t-sky-500 bg-gradient-to-b from-sky-50/40 to-white">
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-sky-700 block">Sócio 2</span>
+                <h3 class="font-black text-slate-900 text-base">Leonardo Monti</h3>
+              </div>
+              <div class="w-9 h-9 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center font-black text-xs">
+                LM
               </div>
             </div>
-            <div class="flex items-baseline gap-1">
-              <span class="text-xs font-bold text-slate-500">R$</span>
-              <span id="kpiExpense" class="text-xl sm:text-2xl font-black text-red-600">0,00</span>
+
+            <div class="mt-3">
+              <span class="text-[11px] text-slate-500 font-semibold block">Total a Receber / Sacar:</span>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span class="text-xs font-bold text-slate-500">R$</span>
+                <span id="splitTotalLeonardo" class="text-2xl font-black text-sky-700">0,00</span>
+              </div>
             </div>
-            <span class="text-[11px] text-slate-400 font-semibold mt-1 block">Papel, tintas, fixos</span>
+
+            <!-- Breakdown de Leonardo -->
+            <div class="mt-4 pt-3 border-t border-slate-100 space-y-1 text-xs text-slate-600">
+              <div class="flex justify-between">
+                <span>💬 Atendimentos (15%):</span>
+                <strong id="subLeoAtendimento" class="text-slate-800">R$ 0,00</strong>
+              </div>
+              <div class="flex justify-between">
+                <span>🎨 Criação de Arte (15%):</span>
+                <strong id="subLeoArte" class="text-slate-800">R$ 0,00</strong>
+              </div>
+              <div class="flex justify-between">
+                <span>⚙️ Produção (25%):</span>
+                <strong id="subLeoProducao" class="text-slate-800">R$ 0,00</strong>
+              </div>
+              <div class="flex justify-between text-sky-800 font-bold pt-1 border-t border-slate-100">
+                <span>💎 Divisão de Lucro (50%):</span>
+                <strong id="subLeoLucro">R$ 0,00</strong>
+              </div>
+            </div>
           </div>
 
-          <!-- Lucro Líquido -->
-          <div class="admin-card p-4 sm:p-5">
-            <div class="flex items-center justify-between text-slate-400 mb-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Lucro Líquido</span>
-              <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center">
-                <i data-lucide="badge-dollar-sign" class="w-4 h-4"></i>
+          <!-- CARD CAIXA DA EMPRESA (10%) -->
+          <div class="admin-card p-5 border-t-4 border-t-slate-800">
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Reserva (10%)</span>
+                <h3 class="font-black text-slate-900 text-base">Caixa da Empresa</h3>
+              </div>
+              <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                <i data-lucide="landmark" class="w-5 h-5"></i>
               </div>
             </div>
-            <div class="flex items-baseline gap-1">
-              <span class="text-xs font-bold text-slate-500">R$</span>
-              <span id="kpiProfit" class="text-xl sm:text-2xl font-black text-emerald-700">0,00</span>
+
+            <div class="mt-3">
+              <span class="text-[11px] text-slate-500 font-semibold block">Saldo Acumulado no Caixa:</span>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span class="text-xs font-bold text-slate-500">R$</span>
+                <span id="splitTotalCaixa" class="text-2xl font-black text-slate-900">0,00</span>
+              </div>
             </div>
-            <span id="kpiMarginBadge" class="text-[11px] text-sky-700 font-bold mt-1 block">Margem: 0%</span>
+
+            <p class="text-[11px] text-slate-500 mt-4 pt-3 border-t border-slate-100">
+              Blindado para manutenção de máquinas, tintas, insumos e capital de giro.
+            </p>
           </div>
 
-          <!-- Ticket Médio -->
-          <div class="admin-card p-4 sm:p-5">
-            <div class="flex items-center justify-between text-slate-400 mb-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Ticket Médio</span>
-              <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
-                <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          <!-- CARD FUNDO DE TRÁFEGO / MARKETING (15% quando pago) -->
+          <div class="admin-card p-5 border-t-4 border-t-amber-500">
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-amber-600 block">Marketing (15%)</span>
+                <h3 class="font-black text-slate-900 text-base">Fundo de Anúncios</h3>
+              </div>
+              <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+                <i data-lucide="megaphone" class="w-5 h-5"></i>
               </div>
             </div>
-            <div class="flex items-baseline gap-1">
-              <span class="text-xs font-bold text-slate-500">R$</span>
-              <span id="kpiTicket" class="text-xl sm:text-2xl font-black text-slate-900">0,00</span>
+
+            <div class="mt-3">
+              <span class="text-[11px] text-slate-500 font-semibold block">Verba para Tráfego Pago:</span>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span class="text-xs font-bold text-slate-500">R$</span>
+                <span id="splitTotalCaptacao" class="text-2xl font-black text-amber-700">0,00</span>
+              </div>
             </div>
-            <span id="kpiOrdersCount" class="text-[11px] text-slate-400 font-semibold mt-1 block">0 vendas fechadas</span>
+
+            <p class="text-[11px] text-slate-500 mt-4 pt-3 border-t border-slate-100">
+              Gerado por vendas de anúncios. Quando a venda é orgânica, esses 15% viram lucro direto para José e Leonardo!
+            </p>
           </div>
         </div>
 
-        <!-- Gráficos Visuais do Fluxo de Caixa -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Gráfico de Comparação: Entradas vs Saídas -->
-          <div class="admin-card p-5 lg:col-span-2">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                <i data-lucide="bar-chart-3" class="w-4 h-4 text-sky-600"></i> Faturamento vs Custos de Produção
-              </h3>
-            </div>
-            <div class="h-64 relative">
-              <canvas id="chartCashFlow"></canvas>
-            </div>
-          </div>
-
-          <!-- Gráfico de Vendas por Categoria -->
-          <div class="admin-card p-5">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                <i data-lucide="pie-chart" class="w-4 h-4 text-sky-600"></i> Receitas por Categoria
-              </h3>
-            </div>
-            <div class="h-64 relative flex items-center justify-center">
-              <canvas id="chartCategories"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tabela Responsiva de Lançamentos Financeiros (modern-web-guidance compliant) -->
+        <!-- TABELA DRE DE REPARTIÇÃO POR PEDIDO -->
         <div class="admin-card p-5">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-              <i data-lucide="receipt" class="w-4 h-4 text-sky-600"></i> Extrato de Movimentações
-            </h3>
-
-            <!-- Filtro de Tipo -->
-            <div class="flex gap-2">
-              <select id="financeTypeFilter" onchange="admin.renderFinanceTable()" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 font-semibold text-slate-700">
-                <option value="all">Todas as Movimentações</option>
-                <option value="receita">Apenas Receitas (Vendas)</option>
-                <option value="despesa">Apenas Custos / Despesas</option>
-              </select>
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                <i data-lucide="table" class="w-4 h-4 text-sky-600"></i> Detalhamento por Pedido (DRE Operacional)
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Veja o valor exato que cada venda gerou para José Reis, Leonardo Monti e o Caixa da Empresa.
+              </p>
             </div>
           </div>
 
-          <!-- Tabela com Suporte a Container Queries e Sticky Header -->
           <div class="table-wrapper">
             <table class="admin-table">
               <thead>
                 <tr>
-                  <th>Data</th>
-                  <th>Tipo</th>
-                  <th>Categoria</th>
-                  <th>Descrição / Pedido</th>
-                  <th>Forma Pagto</th>
-                  <th>Valor</th>
+                  <th>Pedido / Canal</th>
+                  <th>Cliente</th>
+                  <th>Valor Bruto</th>
+                  <th>(-) Custo</th>
+                  <th>(=) Margem</th>
+                  <th>Caixa (10%)</th>
+                  <th class="text-emerald-700">José Reis</th>
+                  <th class="text-sky-700">Leonardo Monti</th>
                   <th>Ações</th>
                 </tr>
               </thead>
-              <tbody id="financeTableBody">
-                <!-- Injetado dinamicamente via admin.js -->
+              <tbody id="splitTableBody">
+                <!-- Renderizado dinamicamente via admin.js -->
               </tbody>
             </table>
           </div>
@@ -329,8 +383,6 @@
 
       <!-- ================= ABA 2: GESTÃO DE PEDIDOS & PRODUÇÃO ================= -->
       <section id="tabOrders" class="hidden p-4 sm:p-6 space-y-6">
-
-        <!-- Filtros Rápidos de Pedido -->
         <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200">
           <div class="flex flex-wrap gap-1.5">
             <button onclick="admin.filterOrders('all', this)" class="order-filter-btn px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold">Todos (<span id="countAllOrders">0</span>)</button>
@@ -353,10 +405,7 @@
           </div>
         </div>
 
-        <!-- Grade de Pedidos -->
-        <div id="ordersContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          <!-- Cards de pedidos gerados via admin.js -->
-        </div>
+        <div id="ordersContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
 
         <div id="emptyOrdersNotice" class="hidden text-center py-12 bg-white rounded-2xl border border-slate-200">
           <i data-lucide="package-check" class="w-12 h-12 text-slate-300 mx-auto mb-2"></i>
@@ -365,7 +414,139 @@
         </div>
       </section>
 
-      <!-- ================= ABA 3: CATÁLOGO DE PRODUTOS & PREÇOS ================= -->
+      <!-- ================= ABA 3: FLUXO DE CAIXA GERAL ================= -->
+      <section id="tabFinances" class="hidden p-4 sm:p-6 space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Período:</span>
+            <div class="flex gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+              <button onclick="admin.setPeriodFilter('all', this)" class="period-btn px-3 py-1.5 rounded-lg active bg-white text-slate-900 shadow-sm">Todos</button>
+              <button onclick="admin.setPeriodFilter('today', this)" class="period-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">Hoje</button>
+              <button onclick="admin.setPeriodFilter('7days', this)" class="period-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">7 Dias</button>
+              <button onclick="admin.setPeriodFilter('month', this)" class="period-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">Este Mês</button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="admin.exportFinancialCSV()" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition flex items-center gap-1.5">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar CSV (Excel)
+            </button>
+          </div>
+        </div>
+
+        <!-- KPIs Gerais -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div class="admin-card p-4 sm:p-5">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Faturamento Bruto</span>
+              <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <i data-lucide="trending-up" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xs font-bold text-slate-500">R$</span>
+              <span id="kpiRevenue" class="text-xl sm:text-2xl font-black text-slate-900">0,00</span>
+            </div>
+            <span class="text-[11px] text-emerald-600 font-semibold mt-1 block">Receitas acumuladas</span>
+          </div>
+
+          <div class="admin-card p-4 sm:p-5">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Custos & Despesas</span>
+              <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+                <i data-lucide="trending-down" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xs font-bold text-slate-500">R$</span>
+              <span id="kpiExpense" class="text-xl sm:text-2xl font-black text-red-600">0,00</span>
+            </div>
+            <span class="text-[11px] text-slate-400 font-semibold mt-1 block">Papel, tintas, fixos</span>
+          </div>
+
+          <div class="admin-card p-4 sm:p-5">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Lucro Líquido</span>
+              <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center">
+                <i data-lucide="badge-dollar-sign" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xs font-bold text-slate-500">R$</span>
+              <span id="kpiProfit" class="text-xl sm:text-2xl font-black text-emerald-700">0,00</span>
+            </div>
+            <span id="kpiMarginBadge" class="text-[11px] text-sky-700 font-bold mt-1 block">Margem: 0%</span>
+          </div>
+
+          <div class="admin-card p-4 sm:p-5">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Ticket Médio</span>
+              <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xs font-bold text-slate-500">R$</span>
+              <span id="kpiTicket" class="text-xl sm:text-2xl font-black text-slate-900">0,00</span>
+            </div>
+            <span id="kpiOrdersCount" class="text-[11px] text-slate-400 font-semibold mt-1 block">0 vendas fechadas</span>
+          </div>
+        </div>
+
+        <!-- Gráficos Visuais -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="admin-card p-5 lg:col-span-2">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2 mb-4">
+              <i data-lucide="bar-chart-3" class="w-4 h-4 text-sky-600"></i> Faturamento vs Custos de Produção
+            </h3>
+            <div class="h-64 relative">
+              <canvas id="chartCashFlow"></canvas>
+            </div>
+          </div>
+
+          <div class="admin-card p-5">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2 mb-4">
+              <i data-lucide="pie-chart" class="w-4 h-4 text-sky-600"></i> Receitas por Categoria
+            </h3>
+            <div class="h-64 relative flex items-center justify-center">
+              <canvas id="chartCategories"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabela Extrato de Movimentações -->
+        <div class="admin-card p-5">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <i data-lucide="receipt" class="w-4 h-4 text-sky-600"></i> Extrato de Movimentações
+            </h3>
+            <select id="financeTypeFilter" onchange="admin.renderFinanceTable()" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 font-semibold text-slate-700">
+              <option value="all">Todas as Movimentações</option>
+              <option value="receita">Apenas Receitas (Vendas)</option>
+              <option value="despesa">Apenas Custos / Despesas</option>
+            </select>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Tipo</th>
+                  <th>Categoria</th>
+                  <th>Descrição / Pedido</th>
+                  <th>Forma Pagto</th>
+                  <th>Valor</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="financeTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA 4: CATÁLOGO DE PRODUTOS & PREÇOS ================= -->
       <section id="tabProducts" class="hidden p-4 sm:p-6 space-y-6">
         <div class="flex items-center justify-between">
           <div>
@@ -377,12 +558,10 @@
           </button>
         </div>
 
-        <div id="adminProductsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Renderizado dinamicamente -->
-        </div>
+        <div id="adminProductsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </section>
 
-      <!-- ================= ABA 4: CONFIGURAÇÕES & PIX ================= -->
+      <!-- ================= ABA 5: CONFIGURAÇÕES & PIX ================= -->
       <section id="tabSettings" class="hidden p-4 sm:p-6 space-y-6 max-w-3xl">
         <div class="admin-card p-6 space-y-5">
           <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
@@ -468,44 +647,169 @@
     </main>
   </div>
 
-  <!-- ================= MODAL: REGISTRAR NOVA VENDA (BALCÃO / NOTEBOOK) ================= -->
-  <div id="quickSaleModal" class="modal-overlay" onclick="if(event.target.id === 'quickSaleModal') admin.closeModal('quickSaleModal')">
-    <div class="modal-sheet max-w-md p-5">
+  <!-- ================= MODAL: REGISTRAR NOVO PEDIDO (WHATSAPP / BALCÃO) COM REPARTIÇÃO AO VIVO ================= -->
+  <div id="quickOrderModal" class="modal-overlay" onclick="if(event.target.id === 'quickOrderModal') admin.closeModal('quickOrderModal')">
+    <div class="modal-sheet max-w-lg p-5">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-          <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-600"></i> Registrar Venda de Balcão
-        </h3>
-        <button onclick="admin.closeModal('quickSaleModal')" class="text-slate-400 hover:text-slate-600">
+        <div>
+          <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+            <i data-lucide="message-circle" class="w-5 h-5 text-emerald-600"></i> Lançar Pedido (WhatsApp / Balcão)
+          </h3>
+          <span class="text-[11px] text-slate-500">Calcula a divisão automática entre José Reis, Leonardo Monti e Caixa</span>
+        </div>
+        <button onclick="admin.closeModal('quickOrderModal')" class="text-slate-400 hover:text-slate-600">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
 
-      <div class="space-y-3 text-xs">
-        <div>
-          <label class="block font-semibold text-slate-700 mb-1">Nome do Cliente *</label>
-          <input type="text" id="saleClientName" placeholder="Ex: Maria Padaria" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
-        </div>
-
-        <div>
-          <label class="block font-semibold text-slate-700 mb-1">Produto / Descrição dos Impressos *</label>
-          <input type="text" id="saleDescription" placeholder="Ex: 500 Panfletos 10x14cm + 1 Banner" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
+      <div class="space-y-3.5 text-xs overflow-y-auto max-h-[70vh] pr-1">
+        <!-- 1. Dados Básicos do Cliente -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block font-semibold text-slate-700 mb-1">Valor Cobrado (R$) *</label>
-            <input type="number" step="0.01" id="saleAmount" placeholder="150.00" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <label class="block font-semibold text-slate-700 mb-1">Nome do Cliente *</label>
+            <input type="text" id="orderClientName" placeholder="Ex: Lucas Hamburgueria" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
           </div>
           <div>
-            <label class="block font-semibold text-slate-700 mb-1">Custo Estimado (R$)</label>
-            <input type="number" step="0.01" id="saleCost" placeholder="45.00" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <label class="block font-semibold text-slate-700 mb-1">WhatsApp do Cliente</label>
+            <input type="tel" id="orderClientPhone" placeholder="(35) 99999-9999" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <!-- 2. Canal de Origem -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Canal de Onde Veio o Pedido</label>
+          <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5 text-center text-[11px] font-bold">
+            <label class="p-2 rounded-xl border bg-slate-50 cursor-pointer hover:bg-emerald-50 hover:border-emerald-300 transition flex flex-col items-center">
+              <input type="radio" name="orderChannel" value="whatsapp" checked onchange="admin.updateSplitPreview()" class="mb-1 text-emerald-600">
+              <span>💬 WhatsApp</span>
+            </label>
+            <label class="p-2 rounded-xl border bg-slate-50 cursor-pointer hover:bg-emerald-50 hover:border-emerald-300 transition flex flex-col items-center">
+              <input type="radio" name="orderChannel" value="balcao" onchange="admin.updateSplitPreview()" class="mb-1 text-emerald-600">
+              <span>🏬 Balcão</span>
+            </label>
+            <label class="p-2 rounded-xl border bg-slate-50 cursor-pointer hover:bg-emerald-50 hover:border-emerald-300 transition flex flex-col items-center">
+              <input type="radio" name="orderChannel" value="site" onchange="admin.updateSplitPreview()" class="mb-1 text-emerald-600">
+              <span>🌐 Site</span>
+            </label>
+            <label class="p-2 rounded-xl border bg-slate-50 cursor-pointer hover:bg-emerald-50 hover:border-emerald-300 transition flex flex-col items-center">
+              <input type="radio" name="orderChannel" value="indicacao" onchange="admin.updateSplitPreview()" class="mb-1 text-emerald-600">
+              <span>🤝 Indicação</span>
+            </label>
+            <label class="p-2 rounded-xl border bg-slate-50 cursor-pointer hover:bg-amber-50 hover:border-amber-300 transition flex flex-col items-center">
+              <input type="radio" name="orderChannel" value="trafego_pago" onchange="admin.updateSplitPreview()" class="mb-1 text-amber-600">
+              <span>📢 Anúncio</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 3. Descrição do Produto / Quantidade -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Descrição dos Impressos / Quantidade *</label>
+          <input type="text" id="orderDescription" placeholder="Ex: 1.000 Cartões Couché 300g Verniz Localizado" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <!-- 4. Valores: Venda e Custo de Produção -->
+        <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+          <div>
+            <label class="block font-bold text-slate-800 mb-1">Valor Cobrado (R$) *</label>
+            <input type="number" step="0.01" id="orderAmount" placeholder="160.00" oninput="admin.updateSplitPreview()" class="w-full px-3 py-2 text-base font-black bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-800 mb-1">Custo Insumos/Prod. (R$)</label>
+            <input type="number" step="0.01" id="orderCost" placeholder="50.00" oninput="admin.updateSplitPreview()" class="w-full px-3 py-2 text-base font-bold bg-white border border-slate-300 rounded-xl text-red-600 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <span class="text-[10px] text-slate-400 mt-0.5 block">Papel, tintas, acabamento</span>
+          </div>
+        </div>
+
+        <!-- 5. REPARTIÇÃO: ATRIBUIÇÃO DE CADA ETAPA -->
+        <div class="space-y-2.5 pt-1 border-t border-slate-200">
+          <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center justify-between">
+            <span>Atribuição Operacional das Etapas</span>
+            <span class="text-[10px] text-slate-400 font-normal">Quem fez cada trabalho?</span>
+          </h4>
+
+          <!-- Atendimento (15%) -->
+          <div class="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="font-semibold text-slate-700">💬 Atendimento (15%):</span>
+            <div class="flex gap-1 text-[11px] font-bold">
+              <label class="px-2.5 py-1 rounded-lg border bg-white cursor-pointer hover:bg-emerald-50">
+                <input type="radio" name="splitAttendance" value="jose" checked onchange="admin.updateSplitPreview()"> José
+              </label>
+              <label class="px-2.5 py-1 rounded-lg border bg-white cursor-pointer hover:bg-sky-50">
+                <input type="radio" name="splitAttendance" value="leonardo" onchange="admin.updateSplitPreview()"> Leonardo
+              </label>
+              <label class="px-2 py-1 rounded-lg border bg-white cursor-pointer hover:bg-slate-100">
+                <input type="radio" name="splitAttendance" value="both" onchange="admin.updateSplitPreview()"> 50/50
+              </label>
+            </div>
+          </div>
+
+          <!-- Criação de Arte (15% ou Lucros) -->
+          <div class="flex flex-col gap-1.5 p-2 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="flex items-center justify-between">
+              <span class="font-semibold text-slate-700">🎨 Criação de Arte (15%):</span>
+              <span class="text-[10px] text-slate-400">Se pronta, +15% vira Lucro!</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1 text-[11px] font-bold">
+              <label class="px-2 py-1 rounded-lg border bg-white cursor-pointer text-center hover:bg-emerald-50">
+                <input type="radio" name="splitArt" value="ready" checked onchange="admin.updateSplitPreview()"> Arte Pronta (+Lucro)
+              </label>
+              <label class="px-2 py-1 rounded-lg border bg-white cursor-pointer text-center hover:bg-emerald-50">
+                <input type="radio" name="splitArt" value="jose" onchange="admin.updateSplitPreview()"> Feita por José
+              </label>
+              <label class="px-2 py-1 rounded-lg border bg-white cursor-pointer text-center hover:bg-sky-50">
+                <input type="radio" name="splitArt" value="leonardo" onchange="admin.updateSplitPreview()"> Feita por Leo
+              </label>
+              <label class="px-2 py-1 rounded-lg border bg-white cursor-pointer text-center hover:bg-slate-100">
+                <input type="radio" name="splitArt" value="both" onchange="admin.updateSplitPreview()"> Ambos 50/50
+              </label>
+            </div>
+          </div>
+
+          <!-- Produção e Acabamento (25%) -->
+          <div class="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="font-semibold text-slate-700">⚙️ Produção (25%):</span>
+            <div class="flex gap-1 text-[11px] font-bold">
+              <label class="px-2.5 py-1 rounded-lg border bg-white cursor-pointer hover:bg-sky-50">
+                <input type="radio" name="splitProduction" value="leonardo" checked onchange="admin.updateSplitPreview()"> Leonardo
+              </label>
+              <label class="px-2.5 py-1 rounded-lg border bg-white cursor-pointer hover:bg-emerald-50">
+                <input type="radio" name="splitProduction" value="jose" onchange="admin.updateSplitPreview()"> José
+              </label>
+              <label class="px-2 py-1 rounded-lg border bg-white cursor-pointer hover:bg-slate-100">
+                <input type="radio" name="splitProduction" value="both" onchange="admin.updateSplitPreview()"> 50/50
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. PRÉ-VISUALIZAÇÃO DO CÁLCULO AO VIVO -->
+        <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-3.5 rounded-2xl shadow-inner">
+          <div class="flex items-center justify-between border-b border-white/10 pb-2 mb-2 text-xs">
+            <span class="text-slate-300">Margem Limpa p/ Repartir:</span>
+            <strong id="previewMargin" class="text-emerald-400 font-black text-sm">R$ 0,00</strong>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center text-xs">
+            <div class="bg-white/5 p-2 rounded-xl border border-white/10">
+              <span class="text-[10px] text-emerald-300 font-bold block">José Reis</span>
+              <strong id="previewJose" class="text-white text-sm font-black">R$ 0,00</strong>
+            </div>
+            <div class="bg-white/5 p-2 rounded-xl border border-white/10">
+              <span class="text-[10px] text-sky-300 font-bold block">Leonardo Monti</span>
+              <strong id="previewLeonardo" class="text-white text-sm font-black">R$ 0,00</strong>
+            </div>
+            <div class="bg-white/5 p-2 rounded-xl border border-white/10">
+              <span class="text-[10px] text-slate-400 font-bold block">Caixa (10%)</span>
+              <strong id="previewCaixa" class="text-white text-sm font-black">R$ 0,00</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Forma de Pagamento e Status -->
+        <div class="grid grid-cols-2 gap-3 pt-1">
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Forma de Pagamento</label>
-            <select id="salePaymentMethod" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl">
+            <select id="orderPaymentMethod" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl">
               <option value="Pix">Pix</option>
               <option value="Dinheiro">Dinheiro</option>
               <option value="Cartão de Crédito">Cartão de Crédito</option>
@@ -515,17 +819,17 @@
           </div>
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Status Pagamento</label>
-            <select id="salePaymentStatus" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl">
-              <option value="pago">Pago Integralmente</option>
+            <select id="orderPaymentStatus" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl font-bold">
+              <option value="pago">Pago Integral</option>
               <option value="parcial">Sinal 50%</option>
-              <option value="pendente">A Pagar na Retirada</option>
+              <option value="pendente">Pendente (Pagar na Retirada)</option>
             </select>
           </div>
         </div>
 
-        <div class="pt-3">
-          <button onclick="admin.submitQuickSale()" class="btn-primary w-full bg-emerald-600 hover:bg-emerald-700 text-xs py-3">
-            Confirmar e Lançar Venda
+        <div class="pt-2">
+          <button onclick="admin.submitQuickOrder()" class="btn-primary w-full bg-emerald-600 hover:bg-emerald-700 text-xs py-3.5 shadow-md">
+            Confirmar e Registrar Pedido no Sistema
           </button>
         </div>
       </div>
@@ -583,6 +887,39 @@
           <button onclick="admin.submitQuickExpense()" class="btn-primary w-full bg-slate-900 hover:bg-slate-800 text-xs py-3">
             Lançar Despesa no Caixa
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: EXPLICATIVO DAS REGRAS DE REPARTIÇÃO ================= -->
+  <div id="splitRulesModal" class="modal-overlay" onclick="if(event.target.id === 'splitRulesModal') admin.closeModal('splitRulesModal')">
+    <div class="modal-sheet max-w-md p-6">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <i data-lucide="info" class="w-5 h-5 text-sky-600"></i> Metodologia de Repartição
+        </h3>
+        <button onclick="admin.closeModal('splitRulesModal')" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs text-slate-600">
+        <p class="font-medium">
+          Assim que uma venda ocorre, retira-se o <strong>custo de produção</strong> (papel, tinta, insumos). O valor remanescente (margem limpa = 100%) é dividido conforme as etapas:
+        </p>
+
+        <ul class="space-y-2 border-l-2 border-sky-500 pl-3">
+          <li><strong>10% Caixa da Empresa:</strong> Reserva fixa para capital de giro e emergências.</li>
+          <li><strong>15% Captação / Marketing:</strong> Se a venda for orgânica (indicação, balcão, WhatsApp direto), esse valor vai para os Lucros dos Sócios!</li>
+          <li><strong>15% Atendimento & Fechamento:</strong> Para quem negociou e atendeu o cliente.</li>
+          <li><strong>15% Criação da Arte:</strong> Para quem criou o arquivo. Se o cliente trouxe a arte pronta, esse valor vai para os Lucros dos Sócios!</li>
+          <li><strong>25% Produção & Acabamento:</strong> Para quem operou a impressora e cortou o material.</li>
+          <li><strong>20% Divisão de Lucros Base:</strong> Dividido 50/50 entre José Reis e Leonardo Monti (+ sobras de arte e captação quando aplicável).</li>
+        </ul>
+
+        <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 text-[11px]">
+          <strong>Exemplo de Sucesso:</strong> Quando o cliente vem do WhatsApp orgânico e já traz arte pronta, a fatia de Lucro Puro dos Sócios sobe para <strong>50% da margem limpa</strong> (25% p/ José e 25% p/ Leonardo)!
         </div>
       </div>
     </div>
