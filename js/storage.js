@@ -6,23 +6,24 @@
  */
 
 const STORAGE_KEYS = {
-  CONFIG: 'grafica_config_v2', // v2 para carregar a nova estrutura de sócios
-  PRODUCTS: 'grafica_products_v2',
-  ORDERS: 'grafica_orders_v2',
-  FINANCES: 'grafica_finances_v2',
-  CART: 'grafica_cart_v2'
+  CONFIG: 'grafica_config_v3', // v3 Sul Design
+  PRODUCTS: 'grafica_products_v3',
+  ORDERS: 'grafica_orders_v3',
+  FINANCES: 'grafica_finances_v3',
+  CART: 'grafica_cart_v3'
 };
 
-// Configuração Padrão da Gráfica com Sócios
+// Configuração Padrão da Gráfica Sul Design com Sócios
 const DEFAULT_CONFIG = {
-  storeName: "PrintPro Gráfica & Comunicação Visual",
-  shortName: "PrintPro",
-  tagline: "Impressão digital de alta precisão, acabamentos nobres e entrega rápida.",
+  storeName: "Sul Design • Gráfica & Comunicação Visual",
+  shortName: "Sul Design",
+  logoUrl: "img/logo.jpg",
+  tagline: "Comunicação visual, impressos de alta precisão e design profissional.",
   whatsappNumber: "5535999702316", // Número configurado
   displayPhone: "(35) 99970-2316",
   pixKey: "35999702316",
   pixType: "Telefone",
-  pixOwner: "PrintPro Gráfica & Serviços",
+  pixOwner: "Sul Design Comunicação Visual",
   address: "Rua do Comércio, 340 - Centro (Retirada no Balcão)",
   operatingHours: "Seg a Sex: 08:30 às 18:30 | Sáb: 08:30 às 12:30",
   standardArtFee: 35.00, // Custo para criação de arte profissional

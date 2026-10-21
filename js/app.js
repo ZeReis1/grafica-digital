@@ -129,7 +129,7 @@ class GraphicShopApp {
 
           <div class="p-4 flex-1 flex flex-col justify-between">
             <div>
-              <span class="text-[11px] font-semibold text-sky-600 uppercase tracking-wider block mb-1">
+              <span class="text-[11px] font-bold text-orange-600 uppercase tracking-wider block mb-1">
                 ${product.categoryLabel}
               </span>
               <h3 class="font-bold text-slate-900 text-base leading-snug mb-1">
@@ -151,7 +151,7 @@ class GraphicShopApp {
 
               <button 
                 onclick="app.openCalculator('${product.id}')"
-                class="px-4 py-2.5 rounded-xl bg-sky-600 text-white font-bold text-xs hover:bg-sky-700 active:scale-95 transition shadow-md shadow-sky-600/20 flex items-center gap-1.5"
+                class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 text-white font-bold text-xs hover:from-orange-500 hover:to-amber-500 active:scale-95 transition shadow-md shadow-orange-600/20 flex items-center gap-1.5"
               >
                 <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
                 Personalizar & Orçar
@@ -251,12 +251,12 @@ class GraphicShopApp {
     if (product.papers && product.papers.length > 0) {
       paperSection.classList.remove('hidden');
       papersContainer.innerHTML = product.papers.map((p, idx) => `
-        <label class="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-sky-300 transition text-xs font-medium">
+        <label class="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-orange-300 transition text-xs font-medium">
           <div class="flex items-center gap-2">
-            <input type="radio" name="calcPaper" value="${p.id}" ${idx === 0 ? 'checked' : ''} onchange="app.selectPaper('${p.id}')" class="text-sky-600 focus:ring-sky-500">
+            <input type="radio" name="calcPaper" value="${p.id}" ${idx === 0 ? 'checked' : ''} onchange="app.selectPaper('${p.id}')" class="text-orange-600 focus:ring-orange-500">
             <span class="text-slate-800">${p.label}</span>
           </div>
-          ${p.priceAdd !== 0 ? `<span class="text-[11px] font-bold ${p.priceAdd > 0 ? 'text-sky-700' : 'text-emerald-600'}">${p.priceAdd > 0 ? '+ R$ ' + p.priceAdd.toFixed(2) : '- R$ ' + Math.abs(p.priceAdd).toFixed(2)}</span>` : '<span class="text-[10px] text-slate-400">Padrão</span>'}
+          ${p.priceAdd !== 0 ? `<span class="text-[11px] font-bold ${p.priceAdd > 0 ? 'text-orange-700' : 'text-emerald-600'}">${p.priceAdd > 0 ? '+ R$ ' + p.priceAdd.toFixed(2) : '- R$ ' + Math.abs(p.priceAdd).toFixed(2)}</span>` : '<span class="text-[10px] text-slate-400">Padrão</span>'}
         </label>
       `).join('');
     } else {
@@ -269,9 +269,9 @@ class GraphicShopApp {
     if (product.finishes && product.finishes.length > 0) {
       finishSection.classList.remove('hidden');
       finishesContainer.innerHTML = product.finishes.map((f, idx) => `
-        <label class="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-sky-300 transition text-xs font-medium">
+        <label class="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-orange-300 transition text-xs font-medium">
           <div class="flex items-center gap-2">
-            <input type="radio" name="calcFinish" value="${f.id}" ${idx === 0 ? 'checked' : ''} onchange="app.selectFinish('${f.id}')" class="text-sky-600 focus:ring-sky-500">
+            <input type="radio" name="calcFinish" value="${f.id}" ${idx === 0 ? 'checked' : ''} onchange="app.selectFinish('${f.id}')" class="text-orange-600 focus:ring-orange-500">
             <span class="text-slate-800">${f.label}</span>
           </div>
         </label>
@@ -290,12 +290,12 @@ class GraphicShopApp {
     if (product.extras && product.extras.length > 0) {
       extrasSection.classList.remove('hidden');
       extrasContainer.innerHTML = product.extras.map(extra => `
-        <label class="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-sky-300 transition text-xs font-medium">
+        <label class="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-orange-300 transition text-xs font-medium">
           <div class="flex items-center gap-2">
-            <input type="checkbox" value="${extra.id}" onchange="app.toggleExtra('${extra.id}', this.checked)" class="rounded text-sky-600 focus:ring-sky-500">
+            <input type="checkbox" value="${extra.id}" onchange="app.toggleExtra('${extra.id}', this.checked)" class="rounded text-orange-600 focus:ring-orange-500">
             <span class="text-slate-800">${extra.label}</span>
           </div>
-          <span class="text-[11px] font-bold text-sky-700">+ R$ ${Number(extra.priceFixed).toFixed(2).replace('.', ',')}</span>
+          <span class="text-[11px] font-bold text-orange-700">+ R$ ${Number(extra.priceFixed).toFixed(2).replace('.', ',')}</span>
         </label>
       `).join('');
     } else {
@@ -495,7 +495,7 @@ class GraphicShopApp {
                 <p>• <strong>Acabamento:</strong> ${item.finish}</p>
                 <p>• <strong>Arte:</strong> ${item.artChoice === 'need' ? '🎨 Criação de Arte Profissional' : '✅ Arte Própria do Cliente'}</p>
               </div>
-              <div class="mt-2 text-xs font-black text-sky-700">
+              <div class="mt-2 text-xs font-black text-orange-600">
                 R$ ${Number(item.total).toFixed(2).replace('.', ',')}
               </div>
             </div>
@@ -727,7 +727,7 @@ class GraphicShopApp {
     const statusMap = {
       novo: { step: 1, label: "Pedido Recebido", color: "text-amber-600" },
       arte: { step: 2, label: "Conferência / Criação de Arte", color: "text-purple-600" },
-      producao: { step: 3, label: "Em Impressão & Acabamento", color: "text-sky-600" },
+      producao: { step: 3, label: "Em Impressão & Acabamento", color: "text-orange-600 font-bold" },
       pronto: { step: 4, label: "Pronto para Retirada no Balcão 🎉", color: "text-emerald-600 font-bold" },
       entregue: { step: 5, label: "Entregue ao Cliente", color: "text-slate-600 font-bold" },
       cancelado: { step: 0, label: "Pedido Cancelado", color: "text-red-600 font-bold" }
@@ -742,7 +742,7 @@ class GraphicShopApp {
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pedido Localizado</span>
             <h4 class="font-black text-slate-900 text-sm">${order.id} - ${order.clientName}</h4>
           </div>
-          <span class="text-xs font-bold text-sky-700">R$ ${Number(order.total).toFixed(2).replace('.', ',')}</span>
+          <span class="text-xs font-bold text-orange-600">R$ ${Number(order.total).toFixed(2).replace('.', ',')}</span>
         </div>
 
         <div>
@@ -753,16 +753,16 @@ class GraphicShopApp {
         <!-- Timeline Visual -->
         <div class="pt-2">
           <div class="grid grid-cols-4 gap-1 text-center text-[10px] font-bold">
-            <div class="${currentStatus.step >= 1 ? 'text-sky-600' : 'text-slate-300'}">
-              <div class="h-1.5 rounded-full mb-1 ${currentStatus.step >= 1 ? 'bg-sky-600' : 'bg-slate-200'}"></div>
+            <div class="${currentStatus.step >= 1 ? 'text-orange-600' : 'text-slate-300'}">
+              <div class="h-1.5 rounded-full mb-1 ${currentStatus.step >= 1 ? 'bg-orange-600' : 'bg-slate-200'}"></div>
               Recebido
             </div>
-            <div class="${currentStatus.step >= 2 ? 'text-sky-600' : 'text-slate-300'}">
-              <div class="h-1.5 rounded-full mb-1 ${currentStatus.step >= 2 ? 'bg-sky-600' : 'bg-slate-200'}"></div>
+            <div class="${currentStatus.step >= 2 ? 'text-orange-600' : 'text-slate-300'}">
+              <div class="h-1.5 rounded-full mb-1 ${currentStatus.step >= 2 ? 'bg-orange-600' : 'bg-slate-200'}"></div>
               Arte
             </div>
-            <div class="${currentStatus.step >= 3 ? 'text-sky-600' : 'text-slate-300'}">
-              <div class="h-1.5 rounded-full mb-1 ${currentStatus.step >= 3 ? 'bg-sky-600' : 'bg-slate-200'}"></div>
+            <div class="${currentStatus.step >= 3 ? 'text-orange-600' : 'text-slate-300'}">
+              <div class="h-1.5 rounded-full mb-1 ${currentStatus.step >= 3 ? 'bg-orange-600' : 'bg-slate-200'}"></div>
               Impressão
             </div>
             <div class="${currentStatus.step >= 4 ? 'text-emerald-600 font-extrabold' : 'text-slate-300'}">

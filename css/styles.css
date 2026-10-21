@@ -1,25 +1,26 @@
 /* ==========================================================================
-   ESTILOS GERAIS & SISTEMA DE DESIGN - PRINTPRO GRÁFICA DIGITAL
+   ESTILOS GERAIS & SISTEMA DE DESIGN - SUL DESIGN GRÁFICA & COMUNICAÇÃO VISUAL
+   Paleta Oficial: Laranja Sul Design (#FF5E00), Âmbar Intenso (#E04F00) & Grafite (#18181B)
    Mobile-First (90% tráfego mobile) com suporte responsivo para PC / Notebook
    ========================================================================== */
 
 :root {
-  --primary: #0284c7;       /* Azul Gráfica Ciano */
-  --primary-hover: #0369a1;
-  --primary-light: #e0f2fe;
-  --primary-dark: #075985;
+  --primary: #FF5E00;       /* Laranja Oficial Sul Design */
+  --primary-hover: #E04F00;
+  --primary-light: #FFF4EC;
+  --primary-dark: #A12604;
   
-  --secondary: #0f172a;     /* Grafite Escuro */
-  --accent: #10b981;        /* Verde WhatsApp & Sucesso */
+  --secondary: #18181B;     /* Grafite / Carvão Escuro */
+  --accent: #10B981;        /* Verde WhatsApp & Sucesso */
   --accent-hover: #059669;
-  --warning: #f59e0b;       /* Laranja Produção */
-  --danger: #ef4444;        /* Vermelho Despesa / Cancelado */
+  --warning: #F59E0B;       /* Âmbar Produção */
+  --danger: #EF4444;        /* Vermelho Despesa / Cancelado */
   
-  --bg-app: #f8fafc;
-  --bg-card: #ffffff;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
+  --bg-app: #FAFAF9;        /* Fundo Neutro Suave */
+  --bg-card: #FFFFFF;
+  --text-main: #1C1917;
+  --text-muted: #71717A;
+  --border-color: #F0ECE7;
   
   --font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --safe-bottom: env(safe-area-inset-bottom, 16px);
@@ -47,7 +48,7 @@ html, body {
 
 /* Typography fluida */
 h1, h2, h3, h4, h5 {
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--secondary);
 }
@@ -67,9 +68,9 @@ h1, h2, h3, h4, h5 {
 
 /* Header Fixo Mobile */
 .header-glass {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
@@ -145,14 +146,15 @@ h1, h2, h3, h4, h5 {
 
 /* Badges de Produto */
 .badge-hot {
-  background: #fee2e2;
-  color: #dc2626;
+  background: #fff1eb;
+  color: #c2410c;
   font-size: 0.68rem;
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 9999px;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  border: 1px solid #fed7aa;
 }
 
 .badge-accent {
@@ -167,8 +169,8 @@ h1, h2, h3, h4, h5 {
 }
 
 .badge-neutral {
-  background: #f1f5f9;
-  color: #475569;
+  background: #f4f4f5;
+  color: #52525b;
   font-size: 0.68rem;
   font-weight: 600;
   padding: 3px 8px;
@@ -185,8 +187,9 @@ h1, h2, h3, h4, h5 {
   color: #7e22ce;
 }
 .status-producao {
-  background-color: #e0f2fe;
-  color: #0369a1;
+  background-color: #fff1eb;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
 }
 .status-pronto {
   background-color: #dcfce7;
@@ -219,9 +222,9 @@ h1, h2, h3, h4, h5 {
   padding: 8px 16px;
   border-radius: 9999px;
   background: white;
-  border: 1px solid var(--border-color);
+  border: 1.5px solid var(--border-color);
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -229,9 +232,10 @@ h1, h2, h3, h4, h5 {
 }
 
 .cat-chip.active, .cat-chip:active {
-  background: var(--secondary);
+  background: linear-gradient(135deg, #FF6F00 0%, #E84500 100%);
   color: white;
-  border-color: var(--secondary);
+  border-color: #FF5E00;
+  box-shadow: 0 4px 12px rgba(255, 94, 0, 0.25);
 }
 
 /* Cards de Produto */
@@ -247,14 +251,15 @@ h1, h2, h3, h4, h5 {
 
 .product-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 14px 32px -10px rgba(255, 94, 0, 0.12);
+  border-color: #fed7aa;
 }
 
 .product-img-wrapper {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 10;
-  background-color: #f1f5f9;
+  background-color: #f5f5f4;
   overflow: hidden;
 }
 
@@ -273,11 +278,11 @@ h1, h2, h3, h4, h5 {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(24, 24, 27, 0.65);
+  backdrop-filter: blur(5px);
   z-index: 100;
   display: flex;
-  align-items: flex-end; /* no mobile vira bottom sheet */
+  align-items: flex-end;
   justify-content: center;
   opacity: 0;
   pointer-events: none;
@@ -300,7 +305,7 @@ h1, h2, h3, h4, h5 {
   transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25);
 }
 
 .modal-overlay.active .modal-sheet {
@@ -325,7 +330,7 @@ h1, h2, h3, h4, h5 {
 .sheet-handle {
   width: 44px;
   height: 5px;
-  background-color: #cbd5e1;
+  background-color: #d6d3d1;
   border-radius: 9999px;
   margin: 12px auto 6px auto;
 }
@@ -339,9 +344,9 @@ h1, h2, h3, h4, h5 {
 
 .option-btn {
   padding: 10px 12px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1.5px solid var(--border-color);
-  background: #f8fafc;
+  background: #fafaf9;
   text-align: center;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -357,7 +362,7 @@ h1, h2, h3, h4, h5 {
   border-color: var(--primary);
   background: var(--primary-light);
   color: var(--primary-dark);
-  font-weight: 700;
+  font-weight: 800;
   box-shadow: 0 0 0 1px var(--primary);
 }
 
@@ -366,7 +371,7 @@ h1, h2, h3, h4, h5 {
   overflow-x: auto;
   max-inline-size: 100%;
   container-type: inline-size;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid var(--border-color);
 }
 
@@ -381,7 +386,7 @@ table.admin-table thead {
   position: sticky;
   inset-block-start: 0;
   z-index: 10;
-  background: #f8fafc;
+  background: #fbf9f6;
 }
 
 table.admin-table th, table.admin-table td {
@@ -407,7 +412,7 @@ table.admin-table th, table.admin-table td {
   table.admin-table tr {
     margin-bottom: 12px;
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 8px;
     background: white;
   }
@@ -422,19 +427,19 @@ table.admin-table th, table.admin-table td {
   
   table.admin-table td::before {
     content: attr(data-label);
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-muted);
     font-size: 0.8rem;
   }
 }
 
-/* Botões Modernos */
+/* Botões Modernos Sul Design */
 .btn-primary {
-  background: var(--primary);
+  background: linear-gradient(135deg, #FF6F00 0%, #E84500 100%);
   color: white;
   padding: 12px 20px;
   border-radius: 14px;
-  font-weight: 700;
+  font-weight: 800;
   border: none;
   cursor: pointer;
   display: inline-flex;
@@ -443,10 +448,12 @@ table.admin-table th, table.admin-table td {
   gap: 8px;
   transition: all 0.2s ease;
   min-height: 48px;
+  box-shadow: 0 4px 16px rgba(255, 94, 0, 0.28);
 }
 
-.btn-primary:hover {
-  background: var(--primary-hover);
+.btn-primary:hover, .btn-primary:active {
+  background: linear-gradient(135deg, #FF5E00 0%, #D43900 100%);
+  transform: translateY(-1px);
 }
 
 .btn-whatsapp {
@@ -454,7 +461,7 @@ table.admin-table th, table.admin-table td {
   color: white;
   padding: 14px 24px;
   border-radius: 14px;
-  font-weight: 700;
+  font-weight: 800;
   border: none;
   cursor: pointer;
   display: inline-flex;
@@ -482,7 +489,7 @@ table.admin-table th, table.admin-table td {
   animation: pulse-subtle 2.5s infinite ease-in-out;
 }
 
-/* Impressão Limpa para Comprovantes do Admin */
+/* Impressão Limpa */
 @media print {
   body {
     background: white;
@@ -490,10 +497,5 @@ table.admin-table th, table.admin-table td {
   }
   .no-print, .bottom-nav, .floating-whatsapp, header, .sidebar {
     display: none !important;
-  }
-  .print-area {
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
   }
 }

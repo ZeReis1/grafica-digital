@@ -1,6 +1,6 @@
-# 🖨️ PrintPro • Gráfica Digital & Sistema de Gestão Financeira
+# 🦅 Sul Design • Gráfica Digital, Comunicação Visual & Gestão de Sócios
 
-Plataforma completa de **Catálogo Digital Mobile-First** para clientes de gráfica rápida / comunicação visual, integrada com um **Painel Administrativo Completo para Notebook/PC** com controle de fluxo de caixa, gestão de produção e pedidos em tempo real via WhatsApp.
+Plataforma oficial da **Sul Design**, com **Catálogo Digital Mobile-First** para clientes de gráfica rápida e comunicação visual, integrada com o **Painel Administrativo dos Sócios (José Reis & Leonardo Monti)** com divisão de lucros por etapas operacionais, controle de fluxo de caixa e pedidos em tempo real via WhatsApp.
 
 ---
 
