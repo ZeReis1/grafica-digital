@@ -912,22 +912,22 @@ class OrcamentoManager {
       } else {
         rcItemsContainer.innerHTML = this.budgetState.items.map((item, idx) => `
           <div class="flex items-center gap-3.5 py-3 border-b border-stone-100 last:border-b-0">
-            <div class="w-14 h-14 rounded-xl overflow-hidden bg-stone-50 border border-stone-200/80 flex items-center justify-center p-1 flex-shrink-0 shadow-sm">
+            <div class="w-14 h-14 rounded-xl overflow-hidden bg-white border border-stone-200 flex items-center justify-center p-1.5 flex-shrink-0 shadow-sm">
               <img src="${item.image}" alt="${item.title}" class="w-full h-full object-contain">
             </div>
             <div class="flex-1 min-w-0">
-              <div class="flex items-baseline justify-between gap-2">
-                <h4 class="font-black text-stone-900 text-sm leading-snug">${item.title}</h4>
-                <span class="font-black text-stone-900 text-base whitespace-nowrap">
+              <div class="flex items-start justify-between gap-3">
+                <h4 class="font-black text-stone-900 text-sm leading-snug flex-1">${item.title}</h4>
+                <span class="font-black text-stone-900 text-base whitespace-nowrap text-right">
                   R$ ${Number(item.subtotal).toFixed(2).replace('.', ',')}
                 </span>
               </div>
               <p class="text-[11px] text-stone-600 font-medium leading-relaxed mt-0.5">${item.specs}</p>
-              <div class="flex items-center gap-2 mt-1">
-                <span class="text-[10px] font-black px-2 py-0.5 rounded-md bg-stone-100 text-stone-800">
+              <div class="flex items-center gap-2 mt-1.5">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-stone-100 text-stone-800 font-black text-[10px] leading-none">
                   ${item.quantityLabel}
                 </span>
-                <span class="text-[10px] text-stone-400 font-semibold">
+                <span class="text-[10px] text-stone-400 font-semibold leading-none">
                   Unit: R$ ${Number(item.unitPrice).toFixed(2).replace('.', ',')}
                 </span>
               </div>
@@ -973,13 +973,21 @@ class OrcamentoManager {
         `;
       }
 
-      // Usa html2canvas com renderização em escala Retina (2x) para nitidez absoluta
+      // Garante que todas as fontes (Plus Jakarta Sans) estejam 100% carregadas antes do canvas
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
+      // Usa html2canvas com renderização em escala 3x e zero scroll offset para eliminar qualquer risco de corte
       const canvas = await html2canvas(receiptEl, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        logging: false
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: receiptEl.scrollWidth || 540
       });
 
       // Converte para blob
@@ -1030,10 +1038,19 @@ class OrcamentoManager {
     try {
       this.showToast('Gerando download em alta resolução...', 'info');
 
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
       const canvas = await html2canvas(receiptEl, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
-        backgroundColor: '#ffffff'
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: receiptEl.scrollWidth || 540
       });
 
       canvas.toBlob((blob) => {
@@ -1089,7 +1106,14 @@ class OrcamentoManager {
     if (navigator.canShare && navigator.userAgent.includes('Mobile')) {
       try {
         const receiptEl = document.getElementById('orcamentoVoucher');
-        const canvas = await html2canvas(receiptEl, { scale: 2, backgroundColor: '#ffffff' });
+        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+        const canvas = await html2canvas(receiptEl, { 
+          scale: 3, 
+          backgroundColor: '#ffffff',
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: receiptEl.scrollWidth || 540
+        });
         const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
         const file = new File([blob], `Orcamento-${this.budgetState.orderNumber}.png`, { type: 'image/png' });
 

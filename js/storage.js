@@ -996,6 +996,18 @@ class StorageManager {
     return order;
   }
 
+  deleteOrder(id) {
+    let orders = this.getOrders();
+    orders = orders.filter(o => o.id !== id);
+    this.saveOrders(orders);
+
+    // Remove despesas ou receitas vinculadas a este pedido para não corromper o caixa e DRE
+    let finances = this.getFinances();
+    finances = finances.filter(f => f.orderId !== id);
+    this.saveFinances(finances);
+    return true;
+  }
+
   // ================= CARRINHO (Mobile Storefront) =================
   getCart() {
     try {

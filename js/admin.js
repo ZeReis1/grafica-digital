@@ -268,9 +268,14 @@ class GraphicShopAdmin {
             R$ ${Number(sp.totalLeonardo).toFixed(2).replace('.', ',')}
           </td>
           <td data-label="Ações">
-            <button onclick="admin.viewOrderSplitDetail('${order.id}')" class="text-xs font-bold text-sky-600 hover:text-sky-800 flex items-center gap-1">
-              <i data-lucide="eye" class="w-3.5 h-3.5"></i> Ver Split
-            </button>
+            <div class="flex items-center gap-1.5">
+              <button onclick="admin.viewOrderSplitDetail('${order.id}')" class="text-xs font-bold text-sky-600 hover:text-sky-800 flex items-center gap-1 py-1 px-2 rounded-lg hover:bg-sky-50 transition" title="Ver Detalhes do Rateio">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i> Ver Split
+              </button>
+              <button onclick="admin.deleteOrder('${order.id}')" class="text-xs font-bold text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition" title="Excluir este Pedido">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
           </td>
         </tr>
       `;
@@ -795,9 +800,18 @@ ${sp.arteValor > 0 ? `🎨 Criação de Arte (15%): R$ ${Number(sp.arteValor).to
                 <h4 class="font-bold text-slate-900 text-sm">${order.clientName}</h4>
                 ${order.clientPhone ? `<span class="text-xs text-slate-500 flex items-center gap-1"><i data-lucide="phone" class="w-3 h-3"></i> ${order.clientPhone}</span>` : ''}
               </div>
-              <span class="text-xs font-black text-slate-900 bg-slate-100 px-2.5 py-1 rounded-xl">
-                R$ ${Number(order.total).toFixed(2).replace('.', ',')}
-              </span>
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-black text-slate-900 bg-slate-100 px-2.5 py-1 rounded-xl">
+                  R$ ${Number(order.total).toFixed(2).replace('.', ',')}
+                </span>
+                <button 
+                  onclick="admin.deleteOrder('${order.id}')" 
+                  class="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" 
+                  title="Excluir este pedido"
+                >
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
             </div>
 
             <!-- Resumo dos Itens e Repartição dos Sócios -->
@@ -818,7 +832,7 @@ ${sp.arteValor > 0 ? `🎨 Criação de Arte (15%): R$ ${Number(sp.arteValor).to
             </div>
           </div>
 
-          <!-- Ações de Status e WhatsApp -->
+          <!-- Ações de Status, WhatsApp e Exclusão -->
           <div class="space-y-2 pt-2 border-t border-slate-100">
             <div class="grid grid-cols-2 gap-2 text-xs">
               <div>
@@ -849,15 +863,24 @@ ${sp.arteValor > 0 ? `🎨 Criação de Arte (15%): R$ ${Number(sp.arteValor).to
               </div>
             </div>
 
-            <!-- Botão de Notificar Cliente no WhatsApp -->
-            ${order.clientPhone ? `
+            <!-- Botões de Ação: WhatsApp e Excluir Pedido -->
+            <div class="flex items-center gap-2 pt-1">
+              ${order.clientPhone ? `
+                <button 
+                  onclick="admin.notifyClientWhatsApp('${order.id}')"
+                  class="flex-1 py-2 px-3 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-emerald-200"
+                >
+                  <i data-lucide="message-circle" class="w-3.5 h-3.5 text-emerald-600"></i> Avisar no WhatsApp
+                </button>
+              ` : ''}
               <button 
-                onclick="admin.notifyClientWhatsApp('${order.id}')"
-                class="w-full py-2 px-3 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-emerald-200"
+                onclick="admin.deleteOrder('${order.id}')"
+                class="py-2 px-3 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-rose-200 ${!order.clientPhone ? 'w-full' : ''}"
+                title="Excluir este pedido permanentemente"
               >
-                <i data-lucide="message-circle" class="w-3.5 h-3.5 text-emerald-600"></i> Avisar Cliente no WhatsApp
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Excluir Pedido
               </button>
-            ` : ''}
+            </div>
           </div>
         </div>
       `;
@@ -874,6 +897,20 @@ ${sp.arteValor > 0 ? `🎨 Criação de Arte (15%): R$ ${Number(sp.arteValor).to
   changeOrderPayment(orderId, newPaymentStatus) {
     window.storage.updateOrderPayment(orderId, newPaymentStatus);
     this.refreshCurrentView();
+  }
+
+  deleteOrder(orderId) {
+    const order = window.storage.getOrderById(orderId);
+    const clientName = order ? order.clientName : orderId;
+    if (!confirm(`Deseja realmente EXCLUIR o pedido ${orderId} (${clientName})?\n\nEsta ação apagará o pedido permanentemente e atualizará o fluxo de caixa e o rateio dos sócios.`)) {
+      return;
+    }
+
+    window.storage.deleteOrder(orderId);
+    this.refreshCurrentView();
+    if (typeof this.updatePendingOrdersBadge === 'function') {
+      this.updatePendingOrdersBadge();
+    }
   }
 
   notifyClientWhatsApp(orderId) {

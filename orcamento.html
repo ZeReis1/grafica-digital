@@ -54,10 +54,27 @@
     .budget-voucher {
       background: #FFFFFF;
       border: 1px solid #E2E8F0;
-      border-radius: 24px;
-      box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.08);
+      border-radius: 28px;
+      box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.08);
       position: relative;
       overflow: hidden;
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    /* Regras de proteção visual para o html2canvas não cortar ou sobrepor textos */
+    .budget-voucher * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
+
+    .budget-voucher .voucher-title-client {
+      line-height: 1.35 !important;
+      word-break: break-word !important;
+      overflow: visible !important;
+      white-space: normal !important;
+      letter-spacing: -0.01em !important;
     }
 
     .voucher-watermark {
@@ -748,33 +765,34 @@
 
             <!-- Badge do Orçamento -->
             <div class="text-right flex-shrink-0">
-              <span class="inline-block px-3 py-1 rounded-full bg-orange-100 text-orange-800 text-[11px] font-black uppercase tracking-wider mb-1">
+              <span class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-orange-100 text-orange-800 text-[10px] font-black uppercase tracking-wider mb-1.5 leading-none">
                 Orçamento
               </span>
               <div id="rcOrderNum" class="font-mono text-xs font-black text-stone-800">ORC-2026-1045</div>
               <div class="text-[10px] text-stone-400 mt-1">
                 Emissão: <strong id="rcDate" class="text-stone-600">21/10/2026</strong>
               </div>
-              <div class="text-[10px] text-orange-600 font-semibold">
+              <div class="text-[10px] text-orange-600 font-semibold mt-0.5">
                 Válido até: <span id="rcValid">28/10/2026</span>
               </div>
             </div>
           </div>
 
           <!-- 2. Dados do Cliente & Atendente -->
-          <div class="bg-stone-50 rounded-2xl p-3.5 border border-stone-200/80 mb-5">
-            <div class="flex items-center justify-between gap-2">
-              <div class="min-w-0">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">Proposta preparada para:</span>
-                <h3 id="rcClientName" class="font-black text-stone-900 text-sm truncate">Carlos Eduardo Silva</h3>
-                <span id="rcClientPhone" class="text-xs text-stone-600 font-semibold block">Tel: (35) 99881-2233</span>
+          <div class="bg-stone-50 rounded-2xl p-4 border border-stone-200 mb-5">
+            <div class="flex items-center justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 block mb-0.5">Proposta preparada para:</span>
+                <h3 id="rcClientName" class="font-black text-stone-900 text-base leading-normal block voucher-title-client">Carlos Eduardo Silva</h3>
+                <span id="rcClientPhone" class="text-xs text-stone-600 font-semibold block mt-0.5">Tel: (35) 99881-2233</span>
               </div>
               <div class="text-right flex-shrink-0">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">Atendimento:</span>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 block mb-0.5">Atendimento:</span>
                 <span id="rcSalesRep" class="text-xs font-black text-stone-800 block">José Reis</span>
-                <span class="text-[10px] text-emerald-600 font-bold flex items-center gap-1 justify-end">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span> Balcão Sul Design
-                </span>
+                <div class="inline-flex items-center gap-1.5 mt-1 justify-end">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
+                  <span class="text-[10px] text-emerald-700 font-bold leading-none">Balcão Sul Design</span>
+                </div>
               </div>
             </div>
           </div>
@@ -792,13 +810,13 @@
           </div>
 
           <!-- Observações personalizadas (se preenchido) -->
-          <div id="rcNotesContainer" class="mb-5 bg-orange-50/60 p-3 rounded-xl border border-orange-200/70 text-xs">
-            <span class="font-black text-orange-800 text-[10px] uppercase tracking-wider block mb-0.5">Observações da Produção:</span>
+          <div id="rcNotesContainer" class="mb-5 bg-orange-50/70 p-3.5 rounded-2xl border border-orange-200/80 text-xs">
+            <span class="font-black text-orange-900 text-[10px] uppercase tracking-wider block mb-1">Observações da Produção:</span>
             <p id="rcNotesText" class="text-stone-700 font-medium leading-relaxed">Cores vivas, alta definição e acabamento de precisão.</p>
           </div>
 
           <!-- 4. Resumo Financeiro & Total Destaque -->
-          <div class="bg-stone-50 rounded-2xl p-4 border border-stone-200 mb-5 space-y-2">
+          <div class="bg-stone-50 rounded-2xl p-4 border border-stone-200 mb-5 space-y-2.5">
             <div class="flex items-center justify-between text-xs text-stone-600 font-semibold">
               <span>Subtotal dos Itens:</span>
               <span id="rcSubtotal" class="font-black text-stone-900">R$ 0,00</span>
@@ -810,41 +828,46 @@
             </div>
 
             <!-- VALOR TOTAL -->
-            <div class="pt-3 border-t-2 border-stone-200 flex items-baseline justify-between">
+            <div class="pt-3.5 border-t-2 border-stone-200 flex items-center justify-between">
               <div>
-                <span class="text-[11px] font-black uppercase tracking-wider text-stone-500 block">Valor Total do Pedido:</span>
-                <span class="text-[10px] text-stone-400 font-semibold">Sem taxas ocultas</span>
+                <span class="text-xs font-black uppercase tracking-wider text-stone-600 block leading-tight">Valor Total do Pedido:</span>
+                <span class="text-[10px] text-stone-400 font-medium block mt-0.5">Sem taxas ocultas • Preço final</span>
               </div>
               <div class="text-right">
-                <span id="rcTotal" class="text-2xl sm:text-3xl font-black text-orange-600">R$ 0,00</span>
+                <span id="rcTotal" class="text-2xl sm:text-3xl font-black text-orange-600 tracking-tight leading-none block">R$ 0,00</span>
               </div>
             </div>
           </div>
 
           <!-- 5. Formas de Pagamento & Prazos -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-5">
-            <div class="bg-white p-3 rounded-xl border border-stone-200">
-              <span class="text-[10px] font-black uppercase tracking-wider text-stone-500 block mb-1">Pagamento via Pix:</span>
-              <div class="flex items-center justify-between gap-1">
-                <code class="font-mono text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">35999702316</code>
+          <div class="grid grid-cols-2 gap-3 text-xs mb-5">
+            <div class="bg-white p-3.5 rounded-2xl border border-stone-200 flex flex-col justify-between">
+              <div>
+                <span class="text-[10px] font-black uppercase tracking-wider text-stone-400 block mb-1.5">Pagamento via Pix:</span>
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200/80 rounded-lg">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+                  <span class="font-mono text-xs font-black text-emerald-800 tracking-wide leading-none">35999702316</span>
+                </div>
               </div>
-              <span class="text-[10px] text-stone-500 block mt-1">Sul Design • Chave Telefone</span>
+              <span class="text-[10px] text-stone-500 font-semibold block mt-2">Sul Design • Chave Telefone</span>
             </div>
 
-            <div class="bg-white p-3 rounded-xl border border-stone-200">
-              <span class="text-[10px] font-black uppercase tracking-wider text-stone-500 block mb-1">Prazo de Produção:</span>
-              <span id="rcTurnaround" class="font-black text-stone-800 text-xs block">2 a 4 dias úteis</span>
-              <span class="text-[10px] text-stone-500 block mt-1">Após aprovação final da arte</span>
+            <div class="bg-white p-3.5 rounded-2xl border border-stone-200 flex flex-col justify-between">
+              <div>
+                <span class="text-[10px] font-black uppercase tracking-wider text-stone-400 block mb-1.5">Prazo de Produção:</span>
+                <span id="rcTurnaround" class="font-black text-stone-900 text-xs block leading-snug">2 a 4 dias úteis</span>
+              </div>
+              <span class="text-[10px] text-stone-500 font-medium block mt-2">Após aprovação final da arte</span>
             </div>
           </div>
 
           <!-- 6. Rodapé Institucional com Selo de Qualidade -->
-          <div class="pt-4 border-t border-stone-200 flex items-center justify-between gap-3 text-[10px] text-stone-400 font-medium">
+          <div class="pt-4 border-t border-stone-200 flex items-center justify-between gap-3 text-[10px] text-stone-500 font-medium">
             <div class="flex items-center gap-1.5">
-              <i data-lucide="shield-check" class="w-4 h-4 text-orange-500"></i>
+              <i data-lucide="shield-check" class="w-4 h-4 text-orange-500 flex-shrink-0"></i>
               <span>Garantia de fidelidade de cores e corte de precisão Sul Design.</span>
             </div>
-            <span class="font-black text-stone-500 whitespace-nowrap">José & Leonardo</span>
+            <span class="font-black text-stone-700 whitespace-nowrap">José & Leonardo</span>
           </div>
 
         </div>
