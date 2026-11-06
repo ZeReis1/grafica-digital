@@ -891,7 +891,10 @@ class OrcamentoManager {
 
     if (rcTurnaround) rcTurnaround.textContent = this.budgetState.turnaround;
 
-    // Observações
+    const rcPixKey = document.getElementById('rcPixKey');
+    if (rcPixKey) rcPixKey.textContent = '35999702316';
+
+    // Observações / Mensagem da Produção
     if (rcNotesContainer && rcNotesText) {
       if (this.budgetState.clientNotes) {
         rcNotesContainer.classList.remove('hidden');
@@ -978,7 +981,7 @@ class OrcamentoManager {
         await document.fonts.ready;
       }
 
-      // Usa html2canvas com renderização em escala 3x e zero scroll offset para eliminar qualquer risco de corte
+      // Usa html2canvas com renderização em escala 3x e dimensões completas do voucher
       const canvas = await html2canvas(receiptEl, {
         scale: 3,
         useCORS: true,
@@ -987,7 +990,10 @@ class OrcamentoManager {
         logging: false,
         scrollX: 0,
         scrollY: 0,
-        windowWidth: receiptEl.scrollWidth || 540
+        width: receiptEl.offsetWidth,
+        height: receiptEl.offsetHeight,
+        windowWidth: receiptEl.scrollWidth + 100,
+        windowHeight: receiptEl.scrollHeight + 500
       });
 
       // Converte para blob
@@ -1050,7 +1056,10 @@ class OrcamentoManager {
         logging: false,
         scrollX: 0,
         scrollY: 0,
-        windowWidth: receiptEl.scrollWidth || 540
+        width: receiptEl.offsetWidth,
+        height: receiptEl.offsetHeight,
+        windowWidth: receiptEl.scrollWidth + 100,
+        windowHeight: receiptEl.scrollHeight + 500
       });
 
       canvas.toBlob((blob) => {
@@ -1077,32 +1086,66 @@ class OrcamentoManager {
     URL.revokeObjectURL(url);
   }
 
-  // ================= ENVIAR NO WHATSAPP =================
-  async shareOnWhatsApp() {
-    const clientPhone = (this.budgetState.clientPhone || '').replace(/\D/g, '');
+  // ================= TEXTO COMPLETO E FORMATAÇÃO DA MENSAGEM DO WHATSAPP =================
+  formatWhatsAppTextMessage() {
     const clientName = this.budgetState.clientName || 'Cliente';
     const subtotal = this.budgetState.items.reduce((acc, item) => acc + (Number(item.subtotal) || 0), 0);
     const finalTotal = Math.max(0, subtotal - (Number(this.budgetState.discount) || 0));
 
-    // Monta texto detalhado e formal
     let msg = `Olá *${clientName}*, tudo bem? Aqui é da *Sul Design • Gráfica & Comunicação Visual*! 🎨\n\n`;
-    msg += `Segue a proposta para o seu pedido (*${this.budgetState.orderNumber}*):\n\n`;
+    msg += `📄 *PROPOSTA DE ORÇAMENTO* (*${this.budgetState.orderNumber}*)\n`;
+    msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
 
-    this.budgetState.items.forEach((item, idx) => {
+    this.budgetState.items.forEach((item) => {
       msg += `▪️ *${item.quantityLabel} ${item.title}*: R$ ${Number(item.subtotal).toFixed(2).replace('.', ',')}\n`;
-      msg += `   _${item.specs}_\n`;
+      if (item.specs) msg += `   _${item.specs}_\n`;
     });
 
     if (this.budgetState.discount > 0) {
-      msg += `\n🏷️ *Desconto Especial*: - R$ ${Number(this.budgetState.discount).toFixed(2).replace('.', ',')}`;
+      msg += `\n🏷️ *Desconto Especial*: - R$ ${Number(this.budgetState.discount).toFixed(2).replace('.', ',')}\n`;
     }
 
-    msg += `\n💰 *VALOR TOTAL*: *R$ ${finalTotal.toFixed(2).replace('.', ',')}*\n`;
+    msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `💰 *VALOR TOTAL*: *R$ ${finalTotal.toFixed(2).replace('.', ',')}*\n`;
     msg += `⚡ *Prazo de Produção*: ${this.budgetState.turnaround}\n`;
-    msg += `💳 *Chave Pix*: \`35999702316\` (Sul Design)\n\n`;
-    msg += `Estou te enviando também a imagem do comprovante oficial em anexo. Podemos aprovar a produção? 😊`;
+    msg += `🔑 *Chave Pix*: 35999702316 (Telefone - Sul Design)\n`;
 
-    // Se suportar Web Share API com arquivos no celular, compartilha a imagem direto
+    if (this.budgetState.clientNotes) {
+      msg += `\n📝 *Observações da Produção*: ${this.budgetState.clientNotes}\n`;
+    }
+
+    msg += `\nEstou te enviando também a imagem da nota em anexo. Podemos aprovar a produção? 😊`;
+    return msg;
+  }
+
+  async copyFormattedTextMessage() {
+    const msg = this.formatWhatsAppTextMessage();
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(msg);
+        this.showToast('📋 Texto da mensagem copiado! Cole no WhatsApp com Ctrl + V.', 'success');
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = msg;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        this.showToast('📋 Texto da mensagem copiado!', 'success');
+      }
+    } catch (e) {
+      console.error(e);
+      this.showToast('Erro ao copiar texto.', 'error');
+    }
+  }
+
+  // ================= ENVIAR NO WHATSAPP =================
+  async shareOnWhatsApp() {
+    const clientPhone = (this.budgetState.clientPhone || '').replace(/\D/g, '');
+    const clientName = this.budgetState.clientName || 'Cliente';
+    const msg = this.formatWhatsAppTextMessage();
+
+    // Se suportar Web Share API com arquivos no celular, compartilha a imagem e texto juntos
     if (navigator.canShare && navigator.userAgent.includes('Mobile')) {
       try {
         const receiptEl = document.getElementById('orcamentoVoucher');
@@ -1112,7 +1155,10 @@ class OrcamentoManager {
           backgroundColor: '#ffffff',
           scrollX: 0,
           scrollY: 0,
-          windowWidth: receiptEl.scrollWidth || 540
+          width: receiptEl.offsetWidth,
+          height: receiptEl.offsetHeight,
+          windowWidth: receiptEl.scrollWidth + 100,
+          windowHeight: receiptEl.scrollHeight + 500
         });
         const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
         const file = new File([blob], `Orcamento-${this.budgetState.orderNumber}.png`, { type: 'image/png' });
@@ -1130,13 +1176,20 @@ class OrcamentoManager {
       }
     }
 
-    // Copia imagem para a área de transferência primeiro para facilitar o Ctrl+V
-    this.copyBudgetAsImage();
+    // Copia a imagem HD para a área de transferência primeiro
+    await this.copyBudgetAsImage();
 
-    // Abre o WhatsApp
+    // Também copia o texto para a área de transferência como segurança
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(msg);
+      }
+    } catch (e) {}
+
+    // Abre o WhatsApp via wa.me (link oficial sem cortes)
     const encoded = encodeURIComponent(msg);
     const targetPhone = clientPhone.length >= 10 ? (clientPhone.startsWith('55') ? clientPhone : '55' + clientPhone) : '';
-    const waUrl = targetPhone ? `https://api.whatsapp.com/send?phone=${targetPhone}&text=${encoded}` : `https://api.whatsapp.com/send?text=${encoded}`;
+    const waUrl = targetPhone ? `https://wa.me/${targetPhone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
 
     window.open(waUrl, '_blank');
   }
