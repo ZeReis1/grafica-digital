@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#FF5E00">
+  <title>Gerador de Orçamento & Simulador de Adesivos • Sul Design</title>
+  <meta name="description" content="Crie orçamentos visuais profissionais com fotos dos produtos, calcule o aproveitamento de adesivos por folha sulfite e copie a imagem em 1 clique para enviar no WhatsApp.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              200: '#fed7aa',
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+              900: '#7c2d12'
+            },
+            sul: {
+              orange: '#FF5E00',
+              deep: '#E04F00',
+              light: '#FFF4EC',
+              dark: '#18181B'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- HTML2Canvas para Captura HD de Imagem sem perda de qualidade -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <!-- Estilos Gerais da Sul Design -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <style>
+    /* Estilos específicos para o Template de Orçamento e Folha Sulfite */
+    .budget-voucher {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 24px;
+      box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .voucher-watermark {
+      position: absolute;
+      right: -40px;
+      bottom: -40px;
+      width: 240px;
+      height: 240px;
+      opacity: 0.035;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .sheet-canvas-wrapper {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    /* Otimização de impressão */
+    @media print {
+      body {
+        background: white !important;
+        padding: 0 !important;
+      }
+      .no-print, header, nav, button, .action-bar-top {
+        display: none !important;
+      }
+      .budget-voucher {
+        box-shadow: none !important;
+        border: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-stone-100 text-stone-900 antialiased min-h-screen pb-16">
+
+  <!-- ================= TOPBAR INSTITUCIONAL SUL DESIGN ================= -->
+  <header class="bg-white border-b border-stone-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
+      <!-- Identificação da Gráfica -->
+      <a href="index.html" class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl bg-white shadow-md shadow-orange-500/15 border border-orange-200 flex items-center justify-center p-1 flex-shrink-0">
+          <img src="img/logo-icon.png" alt="Sul Design" class="w-full h-full object-contain">
+        </div>
+        <div>
+          <span class="font-black text-stone-900 text-base leading-tight block">Sul Design</span>
+          <span class="text-[11px] font-bold text-orange-600 block leading-tight">Orçamentos & Simulador de Adesivos</span>
+        </div>
+      </a>
+
+      <!-- Ações Rápidas de Navegação -->
+      <div class="flex items-center gap-2">
+        <button onclick="orcamento.resetBudget()" class="px-3 py-1.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold transition flex items-center gap-1.5" title="Iniciar Orçamento em Branco">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-stone-500"></i>
+          <span class="hidden sm:inline">Novo Orçamento</span>
+        </button>
+
+        <a href="admin.html" class="px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-orange-400"></i>
+          <span class="hidden sm:inline">Painel Admin</span>
+        </a>
+
+        <a href="index.html" class="px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm shadow-orange-600/20">
+          <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Catálogo</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= CONTEÚDO PRINCIPAL (LAYOUT EM GRID RESPONSIVO) ================= -->
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6">
+
+    <!-- Banner Superior de Destaque -->
+    <div class="mb-6 p-4 rounded-2xl bg-gradient-to-r from-stone-950 via-stone-900 to-orange-950 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md border border-orange-900/30">
+      <div>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 text-[11px] font-black uppercase tracking-wider mb-1">
+          <i data-lucide="sparkles" class="w-3 h-3"></i> Ferramenta dos Sócios
+        </div>
+        <h1 class="text-base sm:text-lg font-black tracking-tight">
+          Gerador de Orçamento Visual & Simulador de Adesivos
+        </h1>
+        <p class="text-xs text-stone-300 font-medium">
+          Monte propostas comerciais completas com fotos dos produtos, calcule o melhor rendimento por folha sulfite e copie a imagem em 1 clique para colar direto no WhatsApp do cliente.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <button onclick="document.getElementById('stickerSimulatorCard').scrollIntoView({ behavior: 'smooth' })" class="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 border border-white/15">
+          <i data-lucide="ruler" class="w-3.5 h-3.5 text-orange-400"></i>
+          Simular Adesivo na Folha
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- ================= COLUNA DA ESQUERDA: CONTROLES & SIMULADOR (7 COLUNAS NO PC) ================= -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- ================= CARD 1: SIMULADOR DE ADESIVOS POR FOLHA SULFITE ================= -->
+        <section id="stickerSimulatorCard" class="bg-white rounded-3xl p-5 sm:p-6 border border-stone-200 shadow-sm relative overflow-hidden">
+          <div class="flex items-center justify-between gap-2 border-b border-stone-100 pb-3 mb-4">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                <i data-lucide="grid-3x3" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h2 class="font-black text-stone-900 text-base leading-tight">Simulador de Adesivos por Folha Sulfite</h2>
+                <span class="text-xs text-stone-500 font-medium">Calcule quantos adesivos cabem na folha e evite desperdício</span>
+              </div>
+            </div>
+            <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Cálculo Automático
+            </span>
+          </div>
+
+          <!-- 1. Formato do Adesivo (Redondo vs Retangular) -->
+          <div class="mb-4">
+            <label class="block text-xs font-black uppercase tracking-wider text-stone-700 mb-2">
+              1. Formato do Adesivo:
+            </label>
+            <div class="grid grid-cols-2 gap-2">
+              <button 
+                type="button" 
+                id="shapeCircleBtn" 
+                onclick="orcamento.setStickerShape('circle')" 
+                class="flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 border-orange-500 bg-orange-50 text-orange-700 font-bold text-xs transition shadow-sm"
+              >
+                <i data-lucide="circle" class="w-4 h-4"></i>
+                <span>Redondo / Circular</span>
+              </button>
+
+              <button 
+                type="button" 
+                id="shapeRectBtn" 
+                onclick="orcamento.setStickerShape('rect')" 
+                class="flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 border-stone-200 bg-white text-stone-700 font-bold text-xs hover:border-orange-300 transition"
+              >
+                <i data-lucide="square" class="w-4 h-4"></i>
+                <span>Retangular / Quadrado</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Dimensões do Adesivo e Atalhos Rápidos -->
+          <div class="mb-4 bg-stone-50 p-4 rounded-2xl border border-stone-200">
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-black uppercase tracking-wider text-stone-700">
+                2. Medidas do Adesivo (em centímetros):
+              </label>
+              <span class="text-[11px] text-stone-500 font-semibold">Ex: 5 cm = 50 mm</span>
+            </div>
+
+            <!-- Atalhos de Tamanhos Mais Vendidos -->
+            <div class="flex flex-wrap gap-1.5 mb-3">
+              <span class="text-[10px] font-bold text-stone-500 self-center mr-1">Atalhos:</span>
+              <button onclick="orcamento.setQuickStickerSize(3, 3, 'circle')" class="px-2.5 py-1 rounded-lg bg-white border border-stone-200 hover:border-orange-500 text-stone-800 text-xs font-bold transition">Ø 3 cm</button>
+              <button onclick="orcamento.setQuickStickerSize(4, 4, 'circle')" class="px-2.5 py-1 rounded-lg bg-white border border-stone-200 hover:border-orange-500 text-stone-800 text-xs font-bold transition">Ø 4 cm</button>
+              <button onclick="orcamento.setQuickStickerSize(5, 5, 'circle')" class="px-2.5 py-1 rounded-lg bg-white border border-orange-300 text-orange-700 text-xs font-black shadow-sm">Ø 5 cm ⭐</button>
+              <button onclick="orcamento.setQuickStickerSize(6, 6, 'circle')" class="px-2.5 py-1 rounded-lg bg-white border border-stone-200 hover:border-orange-500 text-stone-800 text-xs font-bold transition">Ø 6 cm</button>
+              <button onclick="orcamento.setQuickStickerSize(5, 5, 'rect')" class="px-2.5 py-1 rounded-lg bg-white border border-stone-200 hover:border-orange-500 text-stone-800 text-xs font-bold transition">5 × 5 cm</button>
+              <button onclick="orcamento.setQuickStickerSize(9, 5, 'rect')" class="px-2.5 py-1 rounded-lg bg-white border border-stone-200 hover:border-orange-500 text-stone-800 text-xs font-bold transition">9 × 5 cm</button>
+              <button onclick="orcamento.setQuickStickerSize(10, 7, 'rect')" class="px-2.5 py-1 rounded-lg bg-white border border-stone-200 hover:border-orange-500 text-stone-800 text-xs font-bold transition">10 × 7 cm</button>
+            </div>
+
+            <!-- Inputs Numéricos de Dimensões -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <span id="stickerWidthLabel" class="block text-xs font-bold text-stone-700 mb-1">Diâmetro (cm):</span>
+                <div class="relative">
+                  <input 
+                    type="number" 
+                    id="stickerWidthInput" 
+                    value="5" 
+                    step="0.1" 
+                    min="0.5" 
+                    max="40" 
+                    class="w-full px-3 py-2 border-2 border-stone-300 rounded-xl font-black text-stone-900 bg-white focus:outline-none focus:border-orange-500 text-sm"
+                  >
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-stone-400">cm</span>
+                </div>
+              </div>
+
+              <div id="stickerHeightGroup" class="hidden">
+                <span class="block text-xs font-bold text-stone-700 mb-1">Altura (cm):</span>
+                <div class="relative">
+                  <input 
+                    type="number" 
+                    id="stickerHeightInput" 
+                    value="5" 
+                    step="0.1" 
+                    min="0.5" 
+                    max="40" 
+                    class="w-full px-3 py-2 border-2 border-stone-300 rounded-xl font-black text-stone-900 bg-white focus:outline-none focus:border-orange-500 text-sm"
+                  >
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-stone-400">cm</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Tipo de Folha e Espaçamento Técnico -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-stone-700 mb-1">
+                Tamanho da Folha:
+              </label>
+              <select id="sheetTypeSelect" onchange="orcamento.setSheetPreset(this.value)" class="w-full px-3 py-2 border border-stone-300 rounded-xl bg-white text-xs font-bold text-stone-900 focus:outline-none focus:border-orange-500">
+                <option value="a4" selected>Sulfite A4 (210 × 297 mm)</option>
+                <option value="a3">Sulfite A3 (297 × 420 mm)</option>
+                <option value="super_a3">Super A3+ (320 × 450 mm)</option>
+                <option value="custom">Personalizado (mm)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-stone-700 mb-1">
+                Espaço / Sangria (mm):
+              </label>
+              <input 
+                type="number" 
+                id="stickerGapInput" 
+                value="3" 
+                min="0" 
+                max="10" 
+                class="w-full px-3 py-2 border border-stone-300 rounded-xl bg-white text-xs font-bold text-stone-900 focus:outline-none focus:border-orange-500"
+                title="Espaçamento entre adesivos para corte"
+              >
+            </div>
+
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-stone-700 mb-1">
+                Margem Impressora (mm):
+              </label>
+              <input 
+                type="number" 
+                id="sheetMarginInput" 
+                value="5" 
+                min="0" 
+                max="15" 
+                class="w-full px-3 py-2 border border-stone-300 rounded-xl bg-white text-xs font-bold text-stone-900 focus:outline-none focus:border-orange-500"
+                title="Margem de segurança da impressora"
+              >
+            </div>
+          </div>
+
+          <!-- Inputs de Folha Customizada (se selecionado 'custom') -->
+          <div id="customSheetInputs" class="hidden grid grid-cols-2 gap-3 mb-4 bg-orange-50/50 p-3 rounded-xl border border-orange-200">
+            <div>
+              <label class="text-[11px] font-bold text-stone-700 block mb-1">Largura Folha (mm):</label>
+              <input type="number" id="customSheetW" value="210" class="w-full px-2.5 py-1.5 border border-stone-300 rounded-lg text-xs font-bold">
+            </div>
+            <div>
+              <label class="text-[11px] font-bold text-stone-700 block mb-1">Altura Folha (mm):</label>
+              <input type="number" id="customSheetH" value="297" class="w-full px-2.5 py-1.5 border border-stone-300 rounded-lg text-xs font-bold">
+            </div>
+          </div>
+
+          <!-- 4. MÉTRICAS CONSOLIDADAS DO RENDIMENTO -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-4">
+            <div class="bg-gradient-to-br from-orange-50 to-amber-50 p-3 rounded-2xl border border-orange-200 text-center">
+              <span class="text-[10px] font-extrabold text-orange-700 uppercase tracking-wider block">Por Folha</span>
+              <span id="metricStickersPerSheet" class="text-2xl sm:text-3xl font-black text-orange-600 block">24</span>
+              <span class="text-[10px] text-stone-500 font-semibold">adesivos</span>
+            </div>
+
+            <div class="bg-stone-50 p-3 rounded-2xl border border-stone-200 text-center">
+              <span class="text-[10px] font-bold text-stone-500 uppercase tracking-wider block">Distribuição</span>
+              <span id="metricGridPattern" class="text-xs sm:text-sm font-black text-stone-800 block mt-1">4 col × 6 lin</span>
+              <span class="text-[10px] text-stone-500 font-semibold">grade calculada</span>
+            </div>
+
+            <div class="bg-stone-50 p-3 rounded-2xl border border-stone-200 text-center">
+              <span class="text-[10px] font-bold text-stone-500 uppercase tracking-wider block">Aproveitamento</span>
+              <span id="metricEfficiency" class="text-base sm:text-lg font-black text-emerald-700 block">82.5%</span>
+              <div class="w-full bg-stone-200 rounded-full h-1.5 mt-1 overflow-hidden">
+                <div id="metricEfficiencyBar" class="bg-emerald-500 h-1.5 rounded-full" style="width: 82%"></div>
+              </div>
+            </div>
+
+            <div class="bg-stone-50 p-3 rounded-2xl border border-stone-200 text-center">
+              <span class="text-[10px] font-bold text-stone-500 uppercase tracking-wider block">Sobra de Papel</span>
+              <span id="metricSurplus" class="text-xs sm:text-sm font-black text-stone-700 block mt-1">+0 sobra</span>
+              <span class="text-[10px] text-stone-400 font-semibold">margem de refile</span>
+            </div>
+          </div>
+
+          <!-- Dica Inteligente de Orientação -->
+          <div id="metricOrientationTip" class="text-xs text-stone-600 bg-stone-50 p-2.5 rounded-xl border border-stone-200 mb-4 flex items-center gap-2">
+            💡 <strong>Melhor rendimento:</strong> Orientação otimizada automaticamente com o menor desperdício.
+          </div>
+
+          <!-- 5. PREVIEW VISUAL DA FOLHA DE SULFITE (CANVAS) -->
+          <div class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-black uppercase tracking-wider text-stone-700 flex items-center gap-1.5">
+                <i data-lucide="eye" class="w-4 h-4 text-orange-600"></i>
+                Visualização Real da Folha de Impressão:
+              </span>
+              <span class="text-[11px] text-stone-500 font-medium">Escala proporcional em mm</span>
+            </div>
+
+            <div class="sheet-canvas-wrapper">
+              <canvas id="sheetCanvas" class="rounded-xl shadow-md cursor-crosshair"></canvas>
+            </div>
+          </div>
+
+          <!-- 6. CALCULADORA DE PREÇO & BOTÃO ADICIONAR AO ORÇAMENTO -->
+          <div class="bg-gradient-to-r from-stone-900 to-stone-950 text-white p-4 sm:p-5 rounded-2xl border border-stone-800 shadow-md">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+              <div>
+                <label class="block text-[11px] font-bold text-stone-300 uppercase tracking-wider mb-1">
+                  Qtd de Adesivos Desejada:
+                </label>
+                <input 
+                  type="number" 
+                  id="stickersNeededInput" 
+                  value="100" 
+                  min="1" 
+                  step="10" 
+                  class="w-full px-3 py-2 rounded-xl bg-stone-800 border border-stone-700 text-white font-black text-base focus:outline-none focus:border-orange-500"
+                >
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold text-stone-300 uppercase tracking-wider mb-1">
+                  Folhas Necessárias:
+                </label>
+                <div class="px-3 py-2 rounded-xl bg-stone-800/80 border border-stone-700 flex items-baseline justify-between">
+                  <span id="metricSheetsNeeded" class="text-base font-black text-orange-400">5</span>
+                  <span class="text-[10px] text-stone-400 font-semibold">folhas sulfite</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold text-stone-300 uppercase tracking-wider mb-1">
+                  Preço por Folha (R$):
+                </label>
+                <input 
+                  type="number" 
+                  id="pricePerSheetInput" 
+                  value="6.00" 
+                  step="0.5" 
+                  min="0" 
+                  class="w-full px-3 py-2 rounded-xl bg-stone-800 border border-stone-700 text-white font-black text-base focus:outline-none focus:border-orange-500"
+                >
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-stone-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <span class="text-[11px] text-stone-400 font-semibold block leading-tight">Valor Total deste Lote:</span>
+                <div class="flex items-baseline gap-1 mt-0.5">
+                  <span id="metricTotalPrice" class="text-2xl font-black text-emerald-400">R$ 30,00</span>
+                  <span id="metricUnitPrice" class="text-xs text-stone-400 font-semibold">(R$ 0,25/adesivo)</span>
+                </div>
+              </div>
+
+              <button 
+                onclick="orcamento.addStickersToBudget()" 
+                class="w-full sm:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-black text-xs uppercase tracking-wider transition shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 active:scale-95"
+              >
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                Adicionar Adesivos ao Orçamento
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= CARD 2: ADICIONAR PRODUTOS DO CATÁLOGO ================= -->
+        <section class="bg-white rounded-3xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+          <div class="flex items-center gap-2.5 border-b border-stone-100 pb-3 mb-4">
+            <div class="w-9 h-9 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center">
+              <i data-lucide="layers" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-black text-stone-900 text-base leading-tight">Adicionar do Catálogo da Sul Design</h3>
+              <span class="text-xs text-stone-500 font-medium">Cartões de visita, banners, panfletos, pastas, canecas e mais</span>
+            </div>
+          </div>
+
+          <!-- Seleção do Produto -->
+          <div class="mb-4">
+            <label class="block text-xs font-black uppercase tracking-wider text-stone-700 mb-1.5">
+              Selecione o Produto:
+            </label>
+            <select 
+              id="catalogProductSelect" 
+              onchange="orcamento.onCatalogProductSelected(this.value)"
+              class="w-full px-3.5 py-2.5 border-2 border-stone-200 rounded-xl bg-stone-50 font-bold text-stone-900 text-sm focus:outline-none focus:border-orange-500"
+            >
+              <option value="">Carregando produtos...</option>
+            </select>
+          </div>
+
+          <!-- Detalhes do Produto Selecionado (Expansível) -->
+          <div id="catalogItemDetails" class="hidden bg-stone-50 p-4 rounded-2xl border border-stone-200 space-y-3 mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-14 h-14 rounded-xl overflow-hidden bg-white border border-stone-200 flex-shrink-0 p-1 flex items-center justify-center">
+                <img id="catalogPreviewImg" src="img/logo-icon.png" alt="" class="w-full h-full object-contain">
+              </div>
+              <div class="min-w-0">
+                <h4 id="catalogSelectedName" class="font-black text-stone-900 text-sm truncate">Nome do Produto</h4>
+                <p id="catalogSelectedDesc" class="text-xs text-stone-500 line-clamp-2">Descrição breve</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-[11px] font-bold text-stone-700 mb-1">Tiragem / Qtd:</label>
+                <select id="catalogQtySelect" onchange="orcamento.updateCatalogCalculatedPrice()" class="w-full px-2.5 py-2 border border-stone-300 rounded-lg text-xs font-bold bg-white"></select>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-700 mb-1">Papel / Material:</label>
+                <select id="catalogPaperSelect" onchange="orcamento.updateCatalogCalculatedPrice()" class="w-full px-2.5 py-2 border border-stone-300 rounded-lg text-xs font-bold bg-white"></select>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-700 mb-1">Acabamento:</label>
+                <select id="catalogFinishSelect" onchange="orcamento.updateCatalogCalculatedPrice()" class="w-full px-2.5 py-2 border border-stone-300 rounded-lg text-xs font-bold bg-white"></select>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-stone-200 flex items-center justify-between">
+              <div>
+                <label class="block text-[11px] font-bold text-stone-500">Valor a Cobrar (R$):</label>
+                <input type="number" id="catalogCustomPriceInput" step="1.0" class="w-28 px-2 py-1 border border-stone-300 rounded-lg text-sm font-black text-stone-900 bg-white">
+              </div>
+              <button 
+                type="button" 
+                onclick="orcamento.addCatalogProductToBudget()" 
+                class="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-md shadow-orange-600/20"
+              >
+                <i data-lucide="plus" class="w-4 h-4"></i> Adicionar Item
+              </button>
+            </div>
+          </div>
+
+          <!-- Item Avulso / Personalizado Livre -->
+          <details class="group border border-stone-200 rounded-2xl p-3 bg-white">
+            <summary class="font-bold text-xs text-stone-700 cursor-pointer flex items-center justify-between">
+              <span class="flex items-center gap-1.5">
+                <i data-lucide="plus-circle" class="w-4 h-4 text-orange-600"></i>
+                Adicionar Item Avulso ou Serviço Sob Medida
+              </span>
+              <span class="text-stone-400 group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <div class="mt-3 pt-3 border-t border-stone-100 space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="text-[11px] font-bold text-stone-700 block mb-1">Nome do Item / Serviço:</label>
+                  <input type="text" id="customItemName" placeholder="Ex: Criação de Logomarca, Faixa em Lona 2x1m" class="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-semibold">
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-stone-700 block mb-1">Ícone / Foto Sugerida:</label>
+                  <select id="customItemIcon" class="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-bold bg-white">
+                    <option value="package">Geral / Logotipo</option>
+                    <option value="card">Cartão de Visita</option>
+                    <option value="file">Impressos em Papel</option>
+                    <option value="tag">Adesivo / Rótulo</option>
+                    <option value="flag">Banner / Lona</option>
+                    <option value="cup">Brindes & Canecas</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-stone-700 block mb-1">Especificações Técnicas / Acabamento:</label>
+                <input type="text" id="customItemSpecs" placeholder="Ex: Lona 440g com reforço e ilhós em toda volta" class="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-semibold">
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-[11px] font-bold text-stone-700 block mb-1">Quantidade:</label>
+                  <input type="number" id="customItemQty" value="1" min="1" class="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-bold">
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-stone-700 block mb-1">Valor Total (R$):</label>
+                  <input type="number" id="customItemPrice" placeholder="Ex: 120.00" step="0.5" class="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-black">
+                </div>
+              </div>
+              <div class="text-right">
+                <button type="button" onclick="orcamento.addCustomItemToBudget()" class="px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold transition">
+                  + Adicionar Item Personalizado
+                </button>
+              </div>
+            </div>
+          </details>
+        </section>
+
+        <!-- ================= CARD 3: DADOS DO CLIENTE & CONDIÇÕES ================= -->
+        <section class="bg-white rounded-3xl p-5 sm:p-6 border border-stone-200 shadow-sm space-y-4">
+          <div class="flex items-center gap-2.5 border-b border-stone-100 pb-3">
+            <div class="w-9 h-9 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center">
+              <i data-lucide="user-check" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-black text-stone-900 text-base leading-tight">Dados do Cliente & Fechamento</h3>
+              <span class="text-xs text-stone-500 font-medium">Informações impressas na nota de orçamento</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-stone-700 mb-1">
+                Nome do Cliente / Empresa:
+              </label>
+              <input 
+                type="text" 
+                id="clientNameInput" 
+                value="Carlos Eduardo Silva" 
+                placeholder="Ex: Carlos Eduardo Silva" 
+                class="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-bold text-stone-900 bg-stone-50 focus:outline-none focus:border-orange-500"
+              >
+            </div>
+
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-stone-700 mb-1">
+                WhatsApp / Telefone:
+              </label>
+              <input 
+                type="text" 
+                id="clientPhoneInput" 
+                value="(35) 99881-2233" 
+                placeholder="Ex: (35) 99881-2233" 
+                class="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-bold text-stone-900 bg-stone-50 focus:outline-none focus:border-orange-500"
+              >
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-stone-700 mb-1">
+                Atendente Responsável:
+              </label>
+              <select id="salesRepSelect" class="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-bold text-stone-900 bg-white">
+                <option value="jose" selected>José Reis</option>
+                <option value="leonardo">Leonardo Monti</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-stone-700 mb-1">
+                Prazo de Produção:
+              </label>
+              <select id="turnaroundSelect" class="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-bold text-stone-900 bg-white">
+                <option value="24h a 48h úteis">⚡ 24h a 48h úteis (Express)</option>
+                <option value="2 a 4 dias úteis" selected>2 a 4 dias úteis (Padrão)</option>
+                <option value="4 a 6 dias úteis">4 a 6 dias úteis (Especial)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-stone-700 mb-1">
+                Desconto Especial (R$):
+              </label>
+              <input 
+                type="number" 
+                id="discountInput" 
+                value="0" 
+                step="1" 
+                class="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-bold text-stone-900 bg-white"
+                placeholder="0,00"
+              >
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-black uppercase tracking-wider text-stone-700 mb-1">
+              Observações / Detalhes do Fechamento:
+            </label>
+            <input 
+              type="text" 
+              id="clientNotesInput" 
+              value="Cores vivas, alta definição e acabamento de precisão." 
+              placeholder="Ex: Entregar com nota, cliente busca na sexta à tarde..." 
+              class="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-medium text-stone-900 bg-stone-50"
+            >
+          </div>
+        </section>
+
+        <!-- ================= CARD 4: GERENCIADOR DE ITENS ADICIONADOS ================= -->
+        <section class="bg-white rounded-3xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+          <div class="flex items-center justify-between border-b border-stone-100 pb-3 mb-4">
+            <div class="flex items-center gap-2">
+              <i data-lucide="shopping-cart" class="w-5 h-5 text-orange-600"></i>
+              <h3 class="font-black text-stone-900 text-base leading-tight">Itens Atuais do Orçamento</h3>
+            </div>
+            <span id="budgetItemsCount" class="text-xs font-black px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800">
+              0 itens
+            </span>
+          </div>
+
+          <div id="budgetItemsEditorList" class="space-y-2.5">
+            <!-- Injetado dinamicamente via JS -->
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ================= COLUNA DA DIREITA: PREVIEW DA NOTA DE ORÇAMENTO (5 COLUNAS NO PC) ================= -->
+      <div id="receiptPreviewSection" class="lg:col-span-5 space-y-4 lg:sticky lg:top-16">
+
+        <!-- Barra de Ações Rápidas (1 Toque) -->
+        <div class="bg-white p-3.5 rounded-2xl border border-stone-200 shadow-sm space-y-2">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-black uppercase tracking-wider text-stone-800 flex items-center gap-1.5">
+              <i data-lucide="send" class="w-4 h-4 text-orange-600"></i>
+              Ações Rápidas de Envio
+            </span>
+            <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              Pronto para Enviar
+            </span>
+          </div>
+
+          <!-- BOTÃO PRINCIPAL: COPIAR IMAGEM EM 1 CLIQUE -->
+          <button 
+            id="btnCopyBudgetImg" 
+            onclick="orcamento.copyBudgetAsImage()" 
+            class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-orange-500/30 flex items-center justify-center gap-2 transition active:scale-95"
+            title="Converte a nota em imagem e copia direto para a área de transferência"
+          >
+            <i data-lucide="copy" class="w-4 h-4"></i>
+            Copiar Imagem (1 Clique)
+          </button>
+
+          <!-- AÇÕES SECUNDÁRIAS -->
+          <div class="grid grid-cols-2 gap-2">
+            <button 
+              onclick="orcamento.shareOnWhatsApp()" 
+              class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-sm"
+              title="Abre o WhatsApp com mensagem formatada"
+            >
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+              Enviar WhatsApp
+            </button>
+
+            <button 
+              onclick="orcamento.downloadBudgetAsImage()" 
+              class="w-full py-2.5 px-3 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-sm"
+              title="Salva arquivo PNG da nota de orçamento no seu dispositivo"
+            >
+              <i data-lucide="download" class="w-4 h-4"></i>
+              Baixar PNG
+            </button>
+          </div>
+
+          <div class="pt-2 border-t border-stone-100 flex items-center justify-between">
+            <button onclick="window.print()" class="text-stone-500 hover:text-stone-800 text-xs font-semibold flex items-center gap-1 transition">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i> Imprimir Folha A4
+            </button>
+            <button onclick="orcamento.convertToShopOrder()" class="text-emerald-700 hover:text-emerald-800 text-xs font-bold flex items-center gap-1 transition">
+              <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Gravar Pedido no Admin
+            </button>
+          </div>
+        </div>
+
+        <!-- ================= TEMPLATE VISUAL DA NOTA DE ORÇAMENTO (O VOUCHER CAPTURADO) ================= -->
+        <div id="orcamentoVoucher" class="budget-voucher p-6 sm:p-7 select-none">
+          
+          <!-- Marca D'água sutil -->
+          <img src="img/logo-icon.png" alt="" class="voucher-watermark">
+
+          <!-- 1. Cabeçalho da Proposta -->
+          <div class="flex items-start justify-between gap-4 border-b-2 border-stone-100 pb-5 mb-5">
+            <div>
+              <div class="w-36 sm:w-44 mb-2">
+                <img src="img/logo-full.png" alt="Sul Design • Gráfica & Comunicação Visual" class="w-full h-auto object-contain">
+              </div>
+              <p class="text-[11px] text-stone-500 font-semibold leading-tight">
+                Comunicação visual, impressos de alta precisão e acabamento impecável.
+              </p>
+              <p class="text-[10px] text-stone-400 font-medium mt-1">
+                WhatsApp: (35) 99970-2316 • Balcão: Rua do Comércio, 340 - Centro
+              </p>
+            </div>
+
+            <!-- Badge do Orçamento -->
+            <div class="text-right flex-shrink-0">
+              <span class="inline-block px-3 py-1 rounded-full bg-orange-100 text-orange-800 text-[11px] font-black uppercase tracking-wider mb-1">
+                Orçamento
+              </span>
+              <div id="rcOrderNum" class="font-mono text-xs font-black text-stone-800">ORC-2026-1045</div>
+              <div class="text-[10px] text-stone-400 mt-1">
+                Emissão: <strong id="rcDate" class="text-stone-600">21/10/2026</strong>
+              </div>
+              <div class="text-[10px] text-orange-600 font-semibold">
+                Válido até: <span id="rcValid">28/10/2026</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Dados do Cliente & Atendente -->
+          <div class="bg-stone-50 rounded-2xl p-3.5 border border-stone-200/80 mb-5">
+            <div class="flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">Proposta preparada para:</span>
+                <h3 id="rcClientName" class="font-black text-stone-900 text-sm truncate">Carlos Eduardo Silva</h3>
+                <span id="rcClientPhone" class="text-xs text-stone-600 font-semibold block">Tel: (35) 99881-2233</span>
+              </div>
+              <div class="text-right flex-shrink-0">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">Atendimento:</span>
+                <span id="rcSalesRep" class="text-xs font-black text-stone-800 block">José Reis</span>
+                <span class="text-[10px] text-emerald-600 font-bold flex items-center gap-1 justify-end">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span> Balcão Sul Design
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Tabela de Itens do Orçamento com Miniaturas de Fotos -->
+          <div class="mb-5">
+            <div class="flex items-center justify-between text-[11px] font-black uppercase tracking-wider text-stone-400 border-b border-stone-200 pb-1.5 mb-2">
+              <span>Item & Especificação Técnica</span>
+              <span>Subtotal</span>
+            </div>
+
+            <div id="rcItemsContainer" class="space-y-1">
+              <!-- Itens preenchidos via JS com miniaturas visuais de alta definição -->
+            </div>
+          </div>
+
+          <!-- Observações personalizadas (se preenchido) -->
+          <div id="rcNotesContainer" class="mb-5 bg-orange-50/60 p-3 rounded-xl border border-orange-200/70 text-xs">
+            <span class="font-black text-orange-800 text-[10px] uppercase tracking-wider block mb-0.5">Observações da Produção:</span>
+            <p id="rcNotesText" class="text-stone-700 font-medium leading-relaxed">Cores vivas, alta definição e acabamento de precisão.</p>
+          </div>
+
+          <!-- 4. Resumo Financeiro & Total Destaque -->
+          <div class="bg-stone-50 rounded-2xl p-4 border border-stone-200 mb-5 space-y-2">
+            <div class="flex items-center justify-between text-xs text-stone-600 font-semibold">
+              <span>Subtotal dos Itens:</span>
+              <span id="rcSubtotal" class="font-black text-stone-900">R$ 0,00</span>
+            </div>
+
+            <div id="rcDiscountRow" class="hidden flex items-center justify-between text-xs text-emerald-700 font-bold">
+              <span>Desconto Aplicado:</span>
+              <span id="rcDiscount">- R$ 0,00</span>
+            </div>
+
+            <!-- VALOR TOTAL -->
+            <div class="pt-3 border-t-2 border-stone-200 flex items-baseline justify-between">
+              <div>
+                <span class="text-[11px] font-black uppercase tracking-wider text-stone-500 block">Valor Total do Pedido:</span>
+                <span class="text-[10px] text-stone-400 font-semibold">Sem taxas ocultas</span>
+              </div>
+              <div class="text-right">
+                <span id="rcTotal" class="text-2xl sm:text-3xl font-black text-orange-600">R$ 0,00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Formas de Pagamento & Prazos -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-5">
+            <div class="bg-white p-3 rounded-xl border border-stone-200">
+              <span class="text-[10px] font-black uppercase tracking-wider text-stone-500 block mb-1">Pagamento via Pix:</span>
+              <div class="flex items-center justify-between gap-1">
+                <code class="font-mono text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">35999702316</code>
+              </div>
+              <span class="text-[10px] text-stone-500 block mt-1">Sul Design • Chave Telefone</span>
+            </div>
+
+            <div class="bg-white p-3 rounded-xl border border-stone-200">
+              <span class="text-[10px] font-black uppercase tracking-wider text-stone-500 block mb-1">Prazo de Produção:</span>
+              <span id="rcTurnaround" class="font-black text-stone-800 text-xs block">2 a 4 dias úteis</span>
+              <span class="text-[10px] text-stone-500 block mt-1">Após aprovação final da arte</span>
+            </div>
+          </div>
+
+          <!-- 6. Rodapé Institucional com Selo de Qualidade -->
+          <div class="pt-4 border-t border-stone-200 flex items-center justify-between gap-3 text-[10px] text-stone-400 font-medium">
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="shield-check" class="w-4 h-4 text-orange-500"></i>
+              <span>Garantia de fidelidade de cores e corte de precisão Sul Design.</span>
+            </div>
+            <span class="font-black text-stone-500 whitespace-nowrap">José & Leonardo</span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================= SCRIPTS ================= -->
+  <!-- Storage Central da Loja (produtos, configurações, pedidos) -->
+  <script src="js/storage.js"></script>
+  <!-- Lógica do Orçamento & Simulador de Folha -->
+  <script src="js/orcamento.js"></script>
+</body>
+</html>

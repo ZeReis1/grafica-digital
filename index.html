@@ -67,8 +67,13 @@
         </div>
       </a>
 
-      <!-- Ações do Header (Rastreio e Carrinho) -->
+      <!-- Ações do Header (Rastreio, Orçamento e Carrinho) -->
       <div class="flex items-center gap-2">
+        <!-- Botão Orçamento & Adesivos -->
+        <a href="orcamento.html" class="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 transition">
+          <i data-lucide="calculator" class="w-3.5 h-3.5 text-orange-600"></i> Orçamento & Adesivos
+        </a>
+
         <!-- Botão Rastrear -->
         <button onclick="app.openTrackerModal()" class="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold text-stone-700 bg-stone-100 hover:bg-stone-200 transition">
           <i data-lucide="search" class="w-3.5 h-3.5 text-orange-600"></i> Rastrear Pedido
@@ -230,9 +235,14 @@
       <div>
         <h4 class="font-bold text-stone-900 text-sm mb-2">Área dos Sócios</h4>
         <p class="text-stone-500 mb-3">Painel administrativo de José Reis & Leonardo Monti para controle de vendas, custos e repartição.</p>
-        <a href="admin.html" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition shadow">
-          <i data-lucide="lock" class="w-3.5 h-3.5 text-orange-400"></i> Painel dos Sócios (Notebook)
-        </a>
+        <div class="flex flex-wrap gap-2">
+          <a href="admin.html" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition shadow">
+            <i data-lucide="lock" class="w-3.5 h-3.5 text-orange-400"></i> Painel dos Sócios
+          </a>
+          <a href="orcamento.html" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-orange-600 text-white font-bold text-xs hover:bg-orange-700 transition shadow">
+            <i data-lucide="calculator" class="w-3.5 h-3.5"></i> Orçamentos & Adesivos
+          </a>
+        </div>
       </div>
     </div>
 

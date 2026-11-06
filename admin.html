@@ -138,6 +138,13 @@
             <span id="adminPendingOrdersBadge" class="ml-auto text-[10px] font-black bg-amber-500 text-stone-950 px-2 py-0.5 rounded-full">0</span>
           </button>
 
+          <!-- Novo Link Direto para Gerador de Orçamento & Adesivos -->
+          <a href="orcamento.html" target="_blank" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-stone-300 hover:bg-stone-900 hover:text-white transition">
+            <i data-lucide="calculator" class="w-5 h-5 text-orange-400"></i>
+            <span>Orçamento & Adesivos</span>
+            <span class="ml-auto text-[10px] font-black bg-orange-500 text-stone-950 px-2 py-0.5 rounded-full">Novo</span>
+          </a>
+
           <button onclick="admin.switchTab('finances')" id="tabBtnFinances" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-stone-300 hover:bg-stone-900 hover:text-white transition">
             <i data-lucide="dollar-sign" class="w-5 h-5"></i>
             <span>Fluxo de Caixa Geral</span>
@@ -190,6 +197,13 @@
 
         <!-- Botões de Ação do Dia a Dia -->
         <div class="flex items-center gap-2">
+          <!-- Botão Gerador de Orçamento & Adesivos -->
+          <a href="orcamento.html" target="_blank" class="px-3.5 py-2 rounded-xl bg-orange-600 text-white font-bold text-xs hover:bg-orange-700 transition flex items-center gap-1.5 shadow-sm shadow-orange-600/20" title="Criar orçamento com fotos e simular aproveitamento de adesivos por folha">
+            <i data-lucide="calculator" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Gerar Orçamento</span>
+            <span class="sm:hidden">Orçamento</span>
+          </a>
+
           <!-- Botão Principal: Novo Pedido (WhatsApp ou Balcão) -->
           <button onclick="admin.openQuickOrderModal()" class="px-3.5 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition flex items-center gap-1.5 shadow-sm shadow-emerald-600/20">
             <i data-lucide="message-circle" class="w-4 h-4"></i>
