@@ -58,7 +58,8 @@
       box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.08);
       position: relative;
       overflow: hidden;
-      max-width: 540px;
+      max-width: 580px;
+      width: 100%;
       margin: 0 auto;
     }
 
@@ -135,6 +136,9 @@
 
       <!-- Ações Rápidas de Navegação -->
       <div class="flex items-center gap-2">
+        <!-- Badge de Sincronização em Nuvem em Tempo Real -->
+        <div id="cloudSyncSlot"></div>
+
         <a href="drive.html" class="px-3 py-1.5 rounded-xl bg-sky-700 hover:bg-sky-800 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
           <i data-lucide="hard-drive" class="w-3.5 h-3.5"></i>
           <span class="hidden sm:inline">Drive de Arquivos</span>
@@ -896,9 +900,9 @@
   </main>
 
   <!-- ================= SCRIPTS ================= -->
-  <!-- Storage Central da Loja (produtos, configurações, pedidos) -->
-  <script src="js/storage.js?v=2.2"></script>
+  <!-- Storage Central da Loja & Sincronização em Nuvem (produtos, configurações, pedidos) -->
+  <script src="js/storage.js?v=2.3"></script>
   <!-- Lógica do Orçamento & Simulador de Folha -->
-  <script src="js/orcamento.js?v=2.2"></script>
+  <script src="js/orcamento.js?v=2.3"></script>
 </body>
 </html>

@@ -823,6 +823,7 @@ class StorageManager {
   saveConfig(config) {
     localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(config));
     this.dispatchChangeEvent('config', config);
+    if (window.cloudSync) window.cloudSync.schedulePush();
   }
 
   // ================= PRODUTOS =================
@@ -843,6 +844,7 @@ class StorageManager {
   saveProducts(products) {
     localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
     this.dispatchChangeEvent('products', products);
+    if (window.cloudSync) window.cloudSync.schedulePush();
   }
 
   upsertProduct(product) {
@@ -882,6 +884,7 @@ class StorageManager {
   saveOrders(orders) {
     localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
     this.dispatchChangeEvent('orders', orders);
+    if (window.cloudSync) window.cloudSync.schedulePush();
   }
 
   createOrder(orderData) {
@@ -1055,6 +1058,7 @@ class StorageManager {
   saveFinances(finances) {
     localStorage.setItem(STORAGE_KEYS.FINANCES, JSON.stringify(finances));
     this.dispatchChangeEvent('finances', finances);
+    if (window.cloudSync) window.cloudSync.schedulePush();
   }
 
   addFinance(tx) {
@@ -1164,5 +1168,579 @@ class StorageManager {
   }
 }
 
-// Instância Global
+// ================= GESTOR DE SINCRONIZAÇÃO EM NUVEM EM TEMPO REAL =================
+class CloudSyncManager {
+  constructor(storageManager) {
+    this.storage = storageManager;
+    this.cloudEndpoint = 'https://kvdb.io/N1ETYS3RhrX7EkribLWbQu/suldesign_data_v2';
+    this.eventBusUrl = 'https://ntfy.sh/suldesign_sync_stream_v2';
+    this.cloudKey = localStorage.getItem('suldesign_cloud_key') || 'suldesign_matriz_prod_v2';
+    this.customFirebaseUrl = localStorage.getItem('suldesign_firebase_url') || '';
+    this.activePartner = localStorage.getItem('suldesign_active_partner') || 'jose';
+    this.deviceId = this.getOrCreateDeviceId();
+
+    this.status = 'syncing'; // 'synced', 'syncing', 'offline', 'error'
+    this.lastSyncTime = localStorage.getItem('suldesign_last_sync_time') || null;
+    this.isSyncing = false;
+    this.pendingPush = false;
+    this.debounceTimer = null;
+    this.sse = null;
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => this.init());
+    } else {
+      setTimeout(() => this.init(), 100);
+    }
+  }
+
+  getOrCreateDeviceId() {
+    let id = localStorage.getItem('suldesign_device_id');
+    if (!id) {
+      id = 'dev-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36);
+      localStorage.setItem('suldesign_device_id', id);
+    }
+    return id;
+  }
+
+  getActivePartnerName() {
+    return this.activePartner === 'leonardo' ? 'Leonardo Monti' : 'José Reis';
+  }
+
+  setActivePartner(partnerId) {
+    this.activePartner = partnerId;
+    localStorage.setItem('suldesign_active_partner', partnerId);
+    this.updateModalUI();
+    this.showToast(`Sócio ativo: ${this.getActivePartnerName()}`, 'info');
+  }
+
+  async init() {
+    this.renderHeaderBadge();
+    this.injectSyncModal();
+
+    // 1. Puxa dados da nuvem na inicialização imediatamente
+    await this.pullFromCloud();
+
+    // 2. Conecta ao barramento SSE para receber notificações em tempo real
+    this.setupRealtimeSSE();
+
+    // 3. Heartbeat periódico a cada 25 segundos
+    setInterval(() => {
+      if (!document.hidden && !this.isSyncing) {
+        this.pullFromCloud(true);
+      }
+    }, 25000);
+
+    // 4. Ao alternar abas ou focar na janela
+    window.addEventListener('focus', () => {
+      if (!this.isSyncing) this.pullFromCloud(true);
+    });
+
+    // 5. Ao recuperar conexão de rede
+    window.addEventListener('online', () => {
+      this.setStatus('syncing');
+      if (this.pendingPush) {
+        this.pushToCloud();
+      } else {
+        this.pullFromCloud();
+      }
+    });
+
+    window.addEventListener('offline', () => {
+      this.setStatus('offline');
+    });
+  }
+
+  setupRealtimeSSE() {
+    if (typeof EventSource === 'undefined') return;
+    try {
+      if (this.sse) this.sse.close();
+      this.sse = new EventSource(this.eventBusUrl + '/sse');
+
+      this.sse.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data && data.deviceId && data.deviceId !== this.deviceId) {
+            console.log('[CloudSync] Alteração remota detectada por:', data.sender || 'Outro sócio');
+            this.pullFromCloud(true);
+          }
+        } catch(e) {}
+      };
+
+      this.sse.onerror = () => {
+        // O navegador reconecta automaticamente
+      };
+    } catch(e) {
+      console.warn('[CloudSync] SSE indisponível:', e);
+    }
+  }
+
+  getEndpointUrl() {
+    if (this.customFirebaseUrl && this.customFirebaseUrl.trim()) {
+      return `${this.customFirebaseUrl.trim().replace(/\/$/, '')}/suldesign.json`;
+    }
+    return this.cloudEndpoint;
+  }
+
+  async pullFromCloud(silent = false) {
+    if (this.isSyncing) return;
+    this.isSyncing = true;
+    if (!silent) this.setStatus('syncing');
+
+    try {
+      const res = await fetch(this.getEndpointUrl(), {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (res.ok) {
+        const cloudState = await res.json();
+        if (cloudState && cloudState.data) {
+          const localUpdated = localStorage.getItem('suldesign_last_sync_time');
+          const remoteUpdated = cloudState.updatedAt;
+
+          const remoteOrders = Array.isArray(cloudState.data.orders) ? cloudState.data.orders : [];
+          const localOrders = this.storage.getOrders();
+
+          // Aplica dados da nuvem se for mais recente ou se o local não tem os pedidos reais
+          if (!localUpdated || !remoteUpdated || remoteUpdated >= localUpdated || (remoteOrders.length > 0 && localOrders.length === 0)) {
+            if (cloudState.data.config) localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(cloudState.data.config));
+            if (cloudState.data.products) localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(cloudState.data.products));
+            if (cloudState.data.orders) localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(cloudState.data.orders));
+            if (cloudState.data.finances) localStorage.setItem(STORAGE_KEYS.FINANCES, JSON.stringify(cloudState.data.finances));
+            if (cloudState.data.currentBudget) {
+              localStorage.setItem('suldesign_current_budget', JSON.stringify(cloudState.data.currentBudget));
+            }
+
+            this.lastSyncTime = remoteUpdated || new Date().toISOString();
+            localStorage.setItem('suldesign_last_sync_time', this.lastSyncTime);
+
+            // Avisa o painel admin e a página de orçamento para recarregarem os dados
+            window.dispatchEvent(new CustomEvent('grafica-data-change', { detail: { type: 'cloud-pull', data: cloudState.data } }));
+          }
+
+          this.setStatus('synced');
+        } else {
+          // Nuvem vazia: envia a semente local
+          await this.pushToCloud(true);
+        }
+      } else {
+        this.setStatus(!navigator.onLine ? 'offline' : 'error');
+      }
+    } catch(err) {
+      console.warn('[CloudSync] Erro no pull:', err);
+      this.setStatus(!navigator.onLine ? 'offline' : 'synced');
+    } finally {
+      this.isSyncing = false;
+      this.updateUI();
+    }
+  }
+
+  schedulePush() {
+    this.pendingPush = true;
+    this.setStatus('syncing');
+    if (this.debounceTimer) clearTimeout(this.debounceTimer);
+
+    this.debounceTimer = setTimeout(() => {
+      this.pushToCloud();
+    }, 800);
+  }
+
+  async pushToCloud(silent = false) {
+    if (!navigator.onLine) {
+      this.pendingPush = true;
+      this.setStatus('offline');
+      return;
+    }
+
+    this.isSyncing = true;
+    if (!silent) this.setStatus('syncing');
+
+    let currentBudget = null;
+    try {
+      const bStr = localStorage.getItem('suldesign_current_budget');
+      if (bStr) currentBudget = JSON.parse(bStr);
+    } catch(e) {}
+
+    const now = new Date().toISOString();
+    const payload = {
+      app: 'SulDesign',
+      version: '2.2',
+      updatedAt: now,
+      updatedBy: this.getActivePartnerName(),
+      deviceId: this.deviceId,
+      data: {
+        config: this.storage.getConfig(),
+        products: this.storage.getProducts(),
+        orders: this.storage.getOrders(),
+        finances: this.storage.getFinances(),
+        currentBudget: currentBudget
+      }
+    };
+
+    try {
+      const res = await fetch(this.getEndpointUrl(), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        this.pendingPush = false;
+        this.lastSyncTime = now;
+        localStorage.setItem('suldesign_last_sync_time', now);
+        this.setStatus('synced');
+
+        // Notifica parceiros via stream SSE
+        this.notifyPeers();
+      } else {
+        this.setStatus('error');
+      }
+    } catch(err) {
+      console.warn('[CloudSync] Erro no push:', err);
+      this.pendingPush = true;
+      this.setStatus(!navigator.onLine ? 'offline' : 'error');
+    } finally {
+      this.isSyncing = false;
+      this.updateUI();
+    }
+  }
+
+  async notifyPeers() {
+    try {
+      await fetch(this.eventBusUrl, {
+        method: 'POST',
+        headers: { 'Title': 'Sul Design Sync' },
+        body: JSON.stringify({
+          action: 'update',
+          deviceId: this.deviceId,
+          sender: this.getActivePartnerName(),
+          timestamp: Date.now()
+        })
+      });
+    } catch(e) {}
+  }
+
+  async syncNow() {
+    this.showToast('Sincronizando com a nuvem...', 'info');
+    await this.pushToCloud();
+    await this.pullFromCloud();
+    this.showToast('Nuvem atualizada e sincronizada com sucesso!', 'success');
+  }
+
+  setStatus(newStatus) {
+    this.status = newStatus;
+    this.updateUI();
+  }
+
+  formatLastSyncTime() {
+    if (!this.lastSyncTime) return 'Nunca';
+    try {
+      const d = new Date(this.lastSyncTime);
+      return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' (' + d.toLocaleDateString('pt-BR') + ')';
+    } catch(e) {
+      return this.lastSyncTime;
+    }
+  }
+
+  updateUI() {
+    const badgeBtn = document.getElementById('cloudSyncBadgeBtn');
+    if (badgeBtn) {
+      const dot = badgeBtn.querySelector('.sync-dot');
+      const text = badgeBtn.querySelector('.sync-text');
+
+      badgeBtn.className = 'px-2.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition select-none shadow-sm cursor-pointer ';
+
+      if (this.status === 'synced') {
+        badgeBtn.className += 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100';
+        if (dot) dot.className = 'sync-dot w-2 h-2 rounded-full bg-emerald-500';
+        if (text) text.textContent = 'Nuvem Sincronizada';
+      } else if (this.status === 'syncing') {
+        badgeBtn.className += 'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100';
+        if (dot) dot.className = 'sync-dot w-2 h-2 rounded-full bg-amber-500 animate-ping';
+        if (text) text.textContent = 'Sincronizando...';
+      } else if (this.status === 'offline') {
+        badgeBtn.className += 'bg-rose-50 border-rose-200 text-rose-800 hover:bg-rose-100';
+        if (dot) dot.className = 'sync-dot w-2 h-2 rounded-full bg-rose-500';
+        if (text) text.textContent = 'Modo Offline (Salvo no PC)';
+      } else {
+        badgeBtn.className += 'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100';
+        if (dot) dot.className = 'sync-dot w-2 h-2 rounded-full bg-amber-500';
+        if (text) text.textContent = 'Conectando Nuvem...';
+      }
+    }
+
+    this.updateModalUI();
+  }
+
+  renderHeaderBadge() {
+    if (document.getElementById('cloudSyncBadgeBtn')) return;
+
+    let container = document.getElementById('cloudSyncSlot');
+    if (!container) {
+      container = document.querySelector('header .flex.items-center.gap-2') || document.querySelector('header');
+    }
+    if (!container) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'cloudSyncBadgeBtn';
+    btn.onclick = () => this.openSyncModal();
+    btn.className = 'px-2.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition select-none shadow-sm cursor-pointer bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100';
+    btn.title = 'Status da Sincronização na Nuvem da Sul Design (Clique para gerenciar)';
+    btn.innerHTML = `
+      <span class="sync-dot w-2 h-2 rounded-full bg-emerald-500"></span>
+      <span class="sync-text text-[11px] font-black">Nuvem Sincronizada</span>
+    `;
+
+    container.prepend(btn);
+  }
+
+  injectSyncModal() {
+    if (document.getElementById('cloudSyncModal')) return;
+
+    const modal = document.createElement('div');
+    modal.id = 'cloudSyncModal';
+    modal.className = 'fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden';
+    modal.innerHTML = `
+      <div class="bg-white rounded-3xl border border-stone-200 shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <!-- Cabeçalho -->
+        <div class="p-6 bg-gradient-to-r from-stone-900 via-stone-800 to-orange-950 text-white flex items-start justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-orange-600/30 border border-orange-500/40 flex items-center justify-center text-orange-400">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-black text-base leading-tight">Sincronização em Nuvem</h3>
+              <p class="text-xs text-stone-300 font-medium mt-0.5">Sul Design • José Reis & Leonardo Monti</p>
+            </div>
+          </div>
+          <button onclick="window.cloudSync.closeSyncModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-lg font-bold transition">
+            ✕
+          </button>
+        </div>
+
+        <div class="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+          <!-- Card de Status da Conexão -->
+          <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-black uppercase tracking-wider text-stone-400 block mb-0.5">Status da Nuvem:</span>
+              <div id="modalSyncStatusText" class="text-xs font-black text-emerald-700 flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Conectado & Sincronizado
+              </div>
+              <span id="modalSyncLastTime" class="text-[10px] text-stone-500 font-medium block mt-1">Última sincronização: Carregando...</span>
+            </div>
+            <button onclick="window.cloudSync.syncNow()" class="px-3 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-black text-xs flex items-center gap-1.5 shadow-sm transition">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              Sincronizar Agora
+            </button>
+          </div>
+
+          <!-- Seletor do Sócio no Dispositivo Atual -->
+          <div>
+            <label class="text-xs font-black text-stone-800 uppercase tracking-wider block mb-2">Quem está usando este aparelho agora?</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button 
+                id="btnPartnerJose"
+                onclick="window.cloudSync.setActivePartner('jose')"
+                class="p-3 rounded-2xl border text-left transition"
+              >
+                <div class="font-black text-xs text-stone-900">José Reis</div>
+                <div class="text-[10px] text-stone-500 font-medium">Sócio • Atendimento & Arte</div>
+              </button>
+              <button 
+                id="btnPartnerLeo"
+                onclick="window.cloudSync.setActivePartner('leonardo')"
+                class="p-3 rounded-2xl border text-left transition"
+              >
+                <div class="font-black text-xs text-stone-900">Leonardo Monti</div>
+                <div class="text-[10px] text-stone-500 font-medium">Sócio • Produção & Acabamento</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Backup & Segurança -->
+          <div class="pt-4 border-t border-stone-200">
+            <label class="text-xs font-black text-stone-800 uppercase tracking-wider block mb-2">Cópia de Segurança (Backup)</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="window.cloudSync.exportBackupFile()" class="p-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-stone-200">
+                <svg class="w-4 h-4 text-stone-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                Baixar Backup (.json)
+              </button>
+
+              <label class="p-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-stone-200 cursor-pointer text-center">
+                <svg class="w-4 h-4 text-stone-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                Restaurar Backup
+                <input type="file" accept=".json" class="hidden" onchange="window.cloudSync.importBackupFile(this.files[0])">
+              </label>
+            </div>
+          </div>
+
+          <!-- Configuração Avançada (Sanfona) -->
+          <details class="pt-2 text-xs text-stone-600">
+            <summary class="font-bold text-stone-700 cursor-pointer hover:text-stone-900 select-none py-1">
+              ⚙️ Opções Avançadas de Servidor / Banco Próprio
+            </summary>
+            <div class="pt-3 space-y-3 bg-stone-50 p-3.5 rounded-2xl border border-stone-200 mt-2">
+              <div>
+                <label class="text-[10px] font-black uppercase tracking-wider text-stone-500 block mb-1">Chave da Matriz Sul Design:</label>
+                <input type="text" id="modalCloudKeyInput" value="${this.cloudKey}" class="w-full px-3 py-1.5 rounded-lg border border-stone-300 text-xs font-mono font-bold bg-white">
+              </div>
+              <div>
+                <label class="text-[10px] font-black uppercase tracking-wider text-stone-500 block mb-1">URL Banco Firebase / Supabase (Opcional):</label>
+                <input type="text" id="modalFirebaseUrlInput" placeholder="Ex: https://meu-projeto-default-rtdb.firebaseio.com" value="${this.customFirebaseUrl}" class="w-full px-3 py-1.5 rounded-lg border border-stone-300 text-xs font-mono bg-white">
+              </div>
+              <button onclick="window.cloudSync.saveAdvancedSettings()" class="w-full py-2 rounded-xl bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition">
+                Salvar Configurações Avançadas
+              </button>
+            </div>
+          </details>
+        </div>
+
+        <div class="p-4 bg-stone-50 border-t border-stone-200 flex justify-end">
+          <button onclick="window.cloudSync.closeSyncModal()" class="px-5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs transition">
+            Concluir & Fechar
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) this.closeSyncModal();
+    });
+  }
+
+  updateModalUI() {
+    const statusText = document.getElementById('modalSyncStatusText');
+    const lastTime = document.getElementById('modalSyncLastTime');
+    const btnJose = document.getElementById('btnPartnerJose');
+    const btnLeo = document.getElementById('btnPartnerLeo');
+
+    if (statusText) {
+      if (this.status === 'synced') {
+        statusText.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Conectado & Sincronizado';
+        statusText.className = 'text-xs font-black text-emerald-700 flex items-center gap-1.5';
+      } else if (this.status === 'syncing') {
+        statusText.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span> Sincronizando dados...';
+        statusText.className = 'text-xs font-black text-amber-700 flex items-center gap-1.5';
+      } else {
+        statusText.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Modo Offline (Salvo Localmente)';
+        statusText.className = 'text-xs font-black text-rose-700 flex items-center gap-1.5';
+      }
+    }
+
+    if (lastTime) {
+      lastTime.textContent = `Última sincronização: ${this.formatLastSyncTime()}`;
+    }
+
+    if (btnJose && btnLeo) {
+      if (this.activePartner === 'jose') {
+        btnJose.className = 'p-3 rounded-2xl border-2 border-orange-500 bg-orange-50 text-left transition';
+        btnLeo.className = 'p-3 rounded-2xl border border-stone-200 bg-white text-left transition hover:bg-stone-50';
+      } else {
+        btnLeo.className = 'p-3 rounded-2xl border-2 border-orange-500 bg-orange-50 text-left transition';
+        btnJose.className = 'p-3 rounded-2xl border border-stone-200 bg-white text-left transition hover:bg-stone-50';
+      }
+    }
+  }
+
+  openSyncModal() {
+    const modal = document.getElementById('cloudSyncModal');
+    if (modal) {
+      this.updateModalUI();
+      modal.classList.remove('hidden');
+    }
+  }
+
+  closeSyncModal() {
+    const modal = document.getElementById('cloudSyncModal');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
+  }
+
+  saveAdvancedSettings() {
+    const keyInput = document.getElementById('modalCloudKeyInput');
+    const fbInput = document.getElementById('modalFirebaseUrlInput');
+
+    if (keyInput) {
+      this.cloudKey = keyInput.value.trim() || 'suldesign_matriz_prod_v2';
+      localStorage.setItem('suldesign_cloud_key', this.cloudKey);
+    }
+    if (fbInput) {
+      this.customFirebaseUrl = fbInput.value.trim();
+      localStorage.setItem('suldesign_firebase_url', this.customFirebaseUrl);
+    }
+
+    this.showToast('Configurações salvas! Sincronizando...', 'success');
+    this.syncNow();
+  }
+
+  async exportBackupFile() {
+    let budget = null;
+    try { budget = JSON.parse(localStorage.getItem('suldesign_current_budget')); } catch(e) {}
+    const backupData = {
+      app: 'SulDesign',
+      exportedAt: new Date().toISOString(),
+      partner: this.getActivePartnerName(),
+      config: this.storage.getConfig(),
+      products: this.storage.getProducts(),
+      orders: this.storage.getOrders(),
+      finances: this.storage.getFinances(),
+      currentBudget: budget
+    };
+
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const d = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `backup-suldesign-${d}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.showToast('📥 Backup baixado com sucesso!', 'success');
+  }
+
+  async importBackupFile(file) {
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      if (!parsed || (!parsed.orders && !parsed.config)) {
+        throw new Error('Arquivo de backup inválido.');
+      }
+
+      if (parsed.config) this.storage.saveConfig(parsed.config);
+      if (parsed.products) this.storage.saveProducts(parsed.products);
+      if (parsed.orders) this.storage.saveOrders(parsed.orders);
+      if (parsed.finances) this.storage.saveFinances(parsed.finances);
+      if (parsed.currentBudget) {
+        localStorage.setItem('suldesign_current_budget', JSON.stringify(parsed.currentBudget));
+      }
+
+      await this.pushToCloud();
+      this.showToast('✅ Backup restaurado e sincronizado na nuvem com sucesso!', 'success');
+      setTimeout(() => location.reload(), 1200);
+    } catch(err) {
+      alert('Erro ao importar backup: ' + err.message);
+    }
+  }
+
+  showToast(msg, type = 'info') {
+    const toast = document.createElement('div');
+    const bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-stone-900';
+    toast.className = `fixed bottom-5 right-5 z-50 px-4 py-3 rounded-2xl ${bg} text-white font-bold text-xs shadow-2xl flex items-center gap-2 animate-in slide-in-from-bottom-5 duration-200`;
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('opacity-0', 'transition', 'duration-300');
+      setTimeout(() => toast.remove(), 300);
+    }, 3500);
+  }
+}
+
+// Instâncias Globais
 window.storage = new StorageManager();
+window.cloudSync = new CloudSyncManager(window.storage);

@@ -82,6 +82,9 @@
 
     <!-- Ações do Topo -->
     <div class="flex items-center gap-2">
+      <!-- Badge de Sincronização em Nuvem em Tempo Real -->
+      <div id="cloudSyncSlot"></div>
+
       <!-- Botão Atualizar Nuvem -->
       <button 
         onclick="drive.fetchFiles()" 
@@ -429,6 +432,7 @@
   </dialog>
 
   <!-- ================= SCRIPTS ================= -->
-  <script src="js/drive.js"></script>
+  <script src="js/storage.js?v=2.3"></script>
+  <script src="js/drive.js?v=2.3"></script>
 </body>
 </html>

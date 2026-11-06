@@ -54,6 +54,28 @@ class OrcamentoManager {
     this.renderReceipt();
     this.setupEventListeners();
 
+    // Sincronização remota em tempo real quando alterado em outro computador
+    window.addEventListener('grafica-data-change', (e) => {
+      if (e.detail && e.detail.type === 'cloud-pull') {
+        const saved = localStorage.getItem('suldesign_current_budget');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (parsed && typeof parsed === 'object') {
+              this.budgetState = {
+                ...this.budgetState,
+                ...parsed,
+                items: Array.isArray(parsed.items) ? parsed.items : []
+              };
+              this.syncFormInputsFromState();
+              this.renderBudgetItems();
+              this.renderReceipt();
+            }
+          } catch (err) {}
+        }
+      }
+    });
+
     if (window.lucide) {
       window.lucide.createIcons();
     }
@@ -805,6 +827,9 @@ class OrcamentoManager {
   saveBudgetState() {
     try {
       localStorage.setItem('suldesign_current_budget', JSON.stringify(this.budgetState));
+      if (window.cloudSync) {
+        window.cloudSync.schedulePush();
+      }
     } catch (e) {
       console.warn('Erro ao salvar no localStorage:', e);
     }
@@ -1004,8 +1029,10 @@ class OrcamentoManager {
         await document.fonts.ready;
       }
 
-      // Usa html2canvas com renderização em escala 2.5x e largura ideal de 560px para NUNCA cortar as laterais
+      // Usa html2canvas com largura fixa garantida de 580px para NUNCA cortar as laterais no WhatsApp
       const canvas = await html2canvas(receiptEl, {
+        width: 580,
+        windowWidth: 1280,
         scale: 2.5,
         useCORS: true,
         allowTaint: true,
@@ -1013,17 +1040,24 @@ class OrcamentoManager {
         logging: false,
         scrollX: 0,
         scrollY: 0,
-        windowWidth: 1280,
         onclone: (clonedDoc) => {
           const el = clonedDoc.getElementById('orcamentoVoucher');
           if (el) {
-            el.style.width = '560px';
-            el.style.minWidth = '560px';
-            el.style.maxWidth = '560px';
+            el.style.width = '580px';
+            el.style.minWidth = '580px';
+            el.style.maxWidth = 'none';
             el.style.boxSizing = 'border-box';
             el.style.padding = '28px 32px';
             el.style.overflow = 'visible';
-            el.style.margin = '0 auto';
+            el.style.margin = '0';
+            if (el.parentElement) {
+              el.parentElement.style.width = '620px';
+              el.parentElement.style.minWidth = '620px';
+              el.parentElement.style.maxWidth = 'none';
+              el.parentElement.style.overflow = 'visible';
+              el.parentElement.style.padding = '0';
+              el.parentElement.style.margin = '0';
+            }
 
             const pixEl = clonedDoc.getElementById('rcPixKey');
             if (pixEl) {
@@ -1091,6 +1125,8 @@ class OrcamentoManager {
       }
 
       const canvas = await html2canvas(receiptEl, {
+        width: 580,
+        windowWidth: 1280,
         scale: 2.5,
         useCORS: true,
         allowTaint: true,
@@ -1098,17 +1134,24 @@ class OrcamentoManager {
         logging: false,
         scrollX: 0,
         scrollY: 0,
-        windowWidth: 1280,
         onclone: (clonedDoc) => {
           const el = clonedDoc.getElementById('orcamentoVoucher');
           if (el) {
-            el.style.width = '560px';
-            el.style.minWidth = '560px';
-            el.style.maxWidth = '560px';
+            el.style.width = '580px';
+            el.style.minWidth = '580px';
+            el.style.maxWidth = 'none';
             el.style.boxSizing = 'border-box';
             el.style.padding = '28px 32px';
             el.style.overflow = 'visible';
-            el.style.margin = '0 auto';
+            el.style.margin = '0';
+            if (el.parentElement) {
+              el.parentElement.style.width = '620px';
+              el.parentElement.style.minWidth = '620px';
+              el.parentElement.style.maxWidth = 'none';
+              el.parentElement.style.overflow = 'visible';
+              el.parentElement.style.padding = '0';
+              el.parentElement.style.margin = '0';
+            }
 
             const pixEl = clonedDoc.getElementById('rcPixKey');
             if (pixEl) {
@@ -1212,21 +1255,30 @@ class OrcamentoManager {
         const receiptEl = document.getElementById('orcamentoVoucher');
         if (document.fonts && document.fonts.ready) await document.fonts.ready;
         const canvas = await html2canvas(receiptEl, { 
+          width: 580,
+          windowWidth: 1280,
           scale: 2.5, 
           backgroundColor: '#ffffff',
           scrollX: 0,
           scrollY: 0,
-          windowWidth: 1280,
           onclone: (clonedDoc) => {
             const el = clonedDoc.getElementById('orcamentoVoucher');
             if (el) {
-              el.style.width = '560px';
-              el.style.minWidth = '560px';
-              el.style.maxWidth = '560px';
+              el.style.width = '580px';
+              el.style.minWidth = '580px';
+              el.style.maxWidth = 'none';
               el.style.boxSizing = 'border-box';
               el.style.padding = '28px 32px';
               el.style.overflow = 'visible';
-              el.style.margin = '0 auto';
+              el.style.margin = '0';
+              if (el.parentElement) {
+                el.parentElement.style.width = '620px';
+                el.parentElement.style.minWidth = '620px';
+                el.parentElement.style.maxWidth = 'none';
+                el.parentElement.style.overflow = 'visible';
+                el.parentElement.style.padding = '0';
+                el.parentElement.style.margin = '0';
+              }
             }
           }
         });
@@ -1353,10 +1405,6 @@ class OrcamentoManager {
       this.renderReceipt();
       this.saveBudgetState();
       this.showToast('✨ Novo orçamento iniciado! Formulário pronto.', 'info');
-    }
-  }
-      this.renderReceipt();
-      this.showToast('Novo orçamento pronto para preenchimento!', 'info');
     }
   }
 
