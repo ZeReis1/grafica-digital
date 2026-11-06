@@ -746,17 +746,24 @@ class OrcamentoManager {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed && Array.isArray(parsed.items) && parsed.items.length > 0) {
-          this.budgetState = { ...this.budgetState, ...parsed };
+        if (parsed && typeof parsed === 'object') {
+          this.budgetState = {
+            ...this.budgetState,
+            ...parsed,
+            items: Array.isArray(parsed.items) ? parsed.items : []
+          };
+          this.syncFormInputsFromState();
           return;
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Erro ao restaurar orçamento salvo:', e);
+      }
     }
 
-    // Itens padrão demonstrativos da Sul Design
+    // Itens padrão demonstrativos da Sul Design (apenas no primeiro acesso)
     this.budgetState.clientName = 'Carlos Eduardo Silva';
     this.budgetState.clientPhone = '(35) 99881-2233';
-    this.budgetState.clientNotes = 'Pedido para inauguração da loja no centro. Alta resolução.';
+    this.budgetState.clientNotes = 'Cores vivas, alta definição e acabamento de precisão.';
     this.budgetState.items = [
       {
         id: 'item-demo-1',
@@ -781,10 +788,26 @@ class OrcamentoManager {
         subtotal: 85.00
       }
     ];
+    this.syncFormInputsFromState();
+    this.saveBudgetState();
+  }
+
+  syncFormInputsFromState() {
+    const el = (id) => document.getElementById(id);
+    if (el('clientNameInput')) el('clientNameInput').value = this.budgetState.clientName || '';
+    if (el('clientPhoneInput')) el('clientPhoneInput').value = this.budgetState.clientPhone || '';
+    if (el('clientNotesInput')) el('clientNotesInput').value = this.budgetState.clientNotes || '';
+    if (el('discountInput')) el('discountInput').value = this.budgetState.discount || 0;
+    if (el('turnaroundSelect')) el('turnaroundSelect').value = this.budgetState.turnaround || '2 a 4 dias úteis';
+    if (el('salesRepSelect')) el('salesRepSelect').value = this.budgetState.salesRep || 'jose';
   }
 
   saveBudgetState() {
-    localStorage.setItem('suldesign_current_budget', JSON.stringify(this.budgetState));
+    try {
+      localStorage.setItem('suldesign_current_budget', JSON.stringify(this.budgetState));
+    } catch (e) {
+      console.warn('Erro ao salvar no localStorage:', e);
+    }
   }
 
   // ================= RENDERIZAÇÃO DA LISTA DE ITENS (EDITOR) =================
@@ -847,8 +870,8 @@ class OrcamentoManager {
     const turnaroundSelect = document.getElementById('turnaroundSelect');
     const salesRepSelect = document.getElementById('salesRepSelect');
 
-    if (clientNameInput && clientNameInput.value) this.budgetState.clientName = clientNameInput.value.trim();
-    if (clientPhoneInput && clientPhoneInput.value) this.budgetState.clientPhone = clientPhoneInput.value.trim();
+    if (clientNameInput) this.budgetState.clientName = clientNameInput.value.trim();
+    if (clientPhoneInput) this.budgetState.clientPhone = clientPhoneInput.value.trim();
     if (clientNotesInput) this.budgetState.clientNotes = clientNotesInput.value.trim();
     if (discountInput) this.budgetState.discount = Math.max(0, Number(discountInput.value) || 0);
     if (turnaroundSelect) this.budgetState.turnaround = turnaroundSelect.value;
@@ -981,19 +1004,38 @@ class OrcamentoManager {
         await document.fonts.ready;
       }
 
-      // Usa html2canvas com renderização em escala 3x e dimensões completas do voucher
+      // Usa html2canvas com renderização em escala 2.5x e largura ideal de 560px para NUNCA cortar as laterais
       const canvas = await html2canvas(receiptEl, {
-        scale: 3,
+        scale: 2.5,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
         scrollX: 0,
         scrollY: 0,
-        width: receiptEl.offsetWidth,
-        height: receiptEl.offsetHeight,
-        windowWidth: receiptEl.scrollWidth + 100,
-        windowHeight: receiptEl.scrollHeight + 500
+        windowWidth: 1280,
+        onclone: (clonedDoc) => {
+          const el = clonedDoc.getElementById('orcamentoVoucher');
+          if (el) {
+            el.style.width = '560px';
+            el.style.minWidth = '560px';
+            el.style.maxWidth = '560px';
+            el.style.boxSizing = 'border-box';
+            el.style.padding = '28px 32px';
+            el.style.overflow = 'visible';
+            el.style.margin = '0 auto';
+
+            const pixEl = clonedDoc.getElementById('rcPixKey');
+            if (pixEl) {
+              pixEl.textContent = '35999702316';
+              pixEl.style.display = 'inline-block';
+              pixEl.style.color = '#065f46';
+              pixEl.style.fontSize = '13px';
+              pixEl.style.fontWeight = '800';
+              pixEl.style.fontFamily = 'monospace, sans-serif';
+            }
+          }
+        }
       });
 
       // Converte para blob
@@ -1049,17 +1091,36 @@ class OrcamentoManager {
       }
 
       const canvas = await html2canvas(receiptEl, {
-        scale: 3,
+        scale: 2.5,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
         scrollX: 0,
         scrollY: 0,
-        width: receiptEl.offsetWidth,
-        height: receiptEl.offsetHeight,
-        windowWidth: receiptEl.scrollWidth + 100,
-        windowHeight: receiptEl.scrollHeight + 500
+        windowWidth: 1280,
+        onclone: (clonedDoc) => {
+          const el = clonedDoc.getElementById('orcamentoVoucher');
+          if (el) {
+            el.style.width = '560px';
+            el.style.minWidth = '560px';
+            el.style.maxWidth = '560px';
+            el.style.boxSizing = 'border-box';
+            el.style.padding = '28px 32px';
+            el.style.overflow = 'visible';
+            el.style.margin = '0 auto';
+
+            const pixEl = clonedDoc.getElementById('rcPixKey');
+            if (pixEl) {
+              pixEl.textContent = '35999702316';
+              pixEl.style.display = 'inline-block';
+              pixEl.style.color = '#065f46';
+              pixEl.style.fontSize = '13px';
+              pixEl.style.fontWeight = '800';
+              pixEl.style.fontFamily = 'monospace, sans-serif';
+            }
+          }
+        }
       });
 
       canvas.toBlob((blob) => {
@@ -1151,14 +1212,23 @@ class OrcamentoManager {
         const receiptEl = document.getElementById('orcamentoVoucher');
         if (document.fonts && document.fonts.ready) await document.fonts.ready;
         const canvas = await html2canvas(receiptEl, { 
-          scale: 3, 
+          scale: 2.5, 
           backgroundColor: '#ffffff',
           scrollX: 0,
           scrollY: 0,
-          width: receiptEl.offsetWidth,
-          height: receiptEl.offsetHeight,
-          windowWidth: receiptEl.scrollWidth + 100,
-          windowHeight: receiptEl.scrollHeight + 500
+          windowWidth: 1280,
+          onclone: (clonedDoc) => {
+            const el = clonedDoc.getElementById('orcamentoVoucher');
+            if (el) {
+              el.style.width = '560px';
+              el.style.minWidth = '560px';
+              el.style.maxWidth = '560px';
+              el.style.boxSizing = 'border-box';
+              el.style.padding = '28px 32px';
+              el.style.overflow = 'visible';
+              el.style.margin = '0 auto';
+            }
+          }
         });
         const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
         const file = new File([blob], `Orcamento-${this.budgetState.orderNumber}.png`, { type: 'image/png' });
@@ -1268,7 +1338,7 @@ class OrcamentoManager {
   }
 
   resetBudget() {
-    if (confirm('Deseja iniciar um novo orçamento? Os itens atuais serão limpos.')) {
+    if (confirm('Deseja iniciar um novo orçamento? Os itens e dados atuais serão limpos.')) {
       this.budgetState.orderNumber = this.generateOrderNumber();
       this.budgetState.createdAt = new Date().toLocaleDateString('pt-BR');
       this.budgetState.validUntil = this.getExpirationDate(7);
@@ -1278,16 +1348,13 @@ class OrcamentoManager {
       this.budgetState.discount = 0;
       this.budgetState.items = [];
 
-      const nameInput = document.getElementById('clientNameInput');
-      const phoneInput = document.getElementById('clientPhoneInput');
-      const notesInput = document.getElementById('clientNotesInput');
-      const discInput = document.getElementById('discountInput');
-      if (nameInput) nameInput.value = '';
-      if (phoneInput) phoneInput.value = '';
-      if (notesInput) notesInput.value = '';
-      if (discInput) discInput.value = '';
-
+      this.syncFormInputsFromState();
       this.renderBudgetItems();
+      this.renderReceipt();
+      this.saveBudgetState();
+      this.showToast('✨ Novo orçamento iniciado! Formulário pronto.', 'info');
+    }
+  }
       this.renderReceipt();
       this.showToast('Novo orçamento pronto para preenchimento!', 'info');
     }

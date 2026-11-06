@@ -578,14 +578,25 @@
 
         <!-- ================= CARD 3: DADOS DO CLIENTE & CONDIÇÕES ================= -->
         <section class="bg-white rounded-3xl p-5 sm:p-6 border border-stone-200 shadow-sm space-y-4">
-          <div class="flex items-center gap-2.5 border-b border-stone-100 pb-3">
-            <div class="w-9 h-9 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center">
-              <i data-lucide="user-check" class="w-5 h-5"></i>
+          <div class="flex items-center justify-between border-b border-stone-100 pb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center">
+                <i data-lucide="user-check" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="font-black text-stone-900 text-base leading-tight">Dados do Cliente & Fechamento</h3>
+                <span class="text-xs text-stone-500 font-medium">Informações salvas e impressas na proposta</span>
+              </div>
             </div>
-            <div>
-              <h3 class="font-black text-stone-900 text-base leading-tight">Dados do Cliente & Fechamento</h3>
-              <span class="text-xs text-stone-500 font-medium">Informações impressas na nota de orçamento</span>
-            </div>
+            <button 
+              type="button" 
+              onclick="orcamento.resetBudget()" 
+              class="px-2.5 py-1 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold text-xs flex items-center gap-1 transition"
+              title="Limpar formulário e iniciar novo orçamento"
+            >
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+              Novo Orçamento
+            </button>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -596,7 +607,6 @@
               <input 
                 type="text" 
                 id="clientNameInput" 
-                value="Carlos Eduardo Silva" 
                 placeholder="Ex: Carlos Eduardo Silva" 
                 class="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-bold text-stone-900 bg-stone-50 focus:outline-none focus:border-orange-500"
               >
@@ -609,7 +619,6 @@
               <input 
                 type="text" 
                 id="clientPhoneInput" 
-                value="(35) 99881-2233" 
                 placeholder="Ex: (35) 99881-2233" 
                 class="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-bold text-stone-900 bg-stone-50 focus:outline-none focus:border-orange-500"
               >
@@ -662,7 +671,7 @@
               rows="2"
               placeholder="Ex: Cores vivas, alta definição e acabamento de precisão..." 
               class="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-medium text-stone-900 bg-stone-50 focus:outline-none focus:border-orange-500 focus:bg-white resize-y"
-            >Cores vivas, alta definição e acabamento de precisão.</textarea>
+            ></textarea>
           </div>
         </section>
 
@@ -758,8 +767,8 @@
           <img src="img/logo-icon.png" alt="" class="voucher-watermark">
 
           <!-- 1. Cabeçalho da Proposta -->
-          <div class="flex items-start justify-between gap-4 border-b-2 border-stone-100 pb-5 mb-5">
-            <div>
+          <div class="flex items-start justify-between gap-3 border-b-2 border-stone-100 pb-5 mb-5">
+            <div class="max-w-[270px]">
               <div class="w-36 sm:w-44 mb-2">
                 <img src="img/logo-full.png" alt="Sul Design • Gráfica & Comunicação Visual" class="w-full h-auto object-contain">
               </div>
@@ -870,12 +879,12 @@
           </div>
 
           <!-- 6. Rodapé Institucional com Selo de Qualidade -->
-          <div class="pt-4 border-t border-stone-200 flex items-center justify-between gap-3 text-[10px] text-stone-500 font-medium">
-            <div class="flex items-center gap-1.5">
+          <div class="pt-4 border-t border-stone-200 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 text-[10px] text-stone-500 font-medium">
+            <div class="flex items-center gap-1.5 flex-1 min-w-0">
               <i data-lucide="shield-check" class="w-4 h-4 text-orange-500 flex-shrink-0"></i>
-              <span>Garantia de fidelidade de cores e corte de precisão Sul Design.</span>
+              <span class="truncate sm:whitespace-normal">Garantia de fidelidade de cores e corte de precisão Sul Design.</span>
             </div>
-            <span class="font-black text-stone-700 whitespace-nowrap">José & Leonardo</span>
+            <span class="font-black text-stone-700 whitespace-nowrap flex-shrink-0">José & Leonardo</span>
           </div>
 
         </div>
@@ -888,8 +897,8 @@
 
   <!-- ================= SCRIPTS ================= -->
   <!-- Storage Central da Loja (produtos, configurações, pedidos) -->
-  <script src="js/storage.js"></script>
+  <script src="js/storage.js?v=2.2"></script>
   <!-- Lógica do Orçamento & Simulador de Folha -->
-  <script src="js/orcamento.js"></script>
+  <script src="js/orcamento.js?v=2.2"></script>
 </body>
 </html>
