@@ -504,3 +504,80 @@ table.admin-table th, table.admin-table td {
     display: none !important;
   }
 }
+
+/* ==========================================================================
+   ESTILOS GOOGLE DRIVE - SUL DESIGN DRIVE (NUVEM DE ARQUIVOS DOS SÓCIOS)
+   ========================================================================== */
+.drive-card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+.drive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+
+.drive-folder-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.18s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.drive-folder-card:hover {
+  background: #f8fafc;
+  border-color: #f97316;
+  transform: translateY(-1px);
+}
+
+.drive-folder-card.active {
+  background: #fff7ed;
+  border-color: #ff5e00;
+  color: #c2410c;
+}
+
+/* Modal e Dialog seguindo as diretrizes modernas */
+dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+/* Overlay de Arrastar e Soltar (Drag & Drop) */
+.dropzone-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 94, 0, 0.08);
+  backdrop-filter: blur(3px);
+  border: 3px dashed #ff5e00;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.dropzone-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
